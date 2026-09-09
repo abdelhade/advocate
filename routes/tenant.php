@@ -3,6 +3,10 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Tenant\CaseController;
+use App\Http\Controllers\Tenant\ClientController;
+use App\Http\Controllers\Tenant\DashboardController;
+use App\Http\Controllers\Tenant\SessionController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -23,9 +27,17 @@ Route::middleware([
         ]);
     });
 
-    Route::get('/dashboard', function () {
-        return Inertia::render('Dashboard');
-    })->middleware(['auth', 'verified'])->name('dashboard');
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        
+        Route::resource('clients', ClientController::class);
+        
+        Route::resource('cases', CaseController::class);
+        Route::post('cases/{case}/notes', [CaseController::class, 'addNote'])->name('cases.notes.store');
+        
+        Route::post('cases/{case}/sessions', [SessionController::class, 'store'])->name('cases.sessions.store');
+        Route::delete('cases/{case}/sessions/{session}', [SessionController::class, 'destroy'])->name('cases.sessions.destroy');
+    });
 
     Route::middleware('auth')->group(function () {
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
