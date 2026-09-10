@@ -1,11 +1,13 @@
 <script setup>
 import TenantLayout from '@/Layouts/TenantLayout.vue';
 import { Head, Link, useForm, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 const props = defineProps({
     case: Object,
 });
+
+const legalCase = computed(() => props.case);
 
 // Session Management
 const showAddSessionModal = ref(false);
@@ -55,7 +57,7 @@ const deleteCase = () => {
 </script>
 
 <template>
-    <Head :title="`تفاصيل القضية: ${case.title}`" />
+    <Head :title="`تفاصيل القضية: ${legalCase.title}`" />
 
     <TenantLayout>
         <template #title>تفاصيل القضية</template>
@@ -64,7 +66,7 @@ const deleteCase = () => {
         <div class="flex items-center gap-2 text-sm text-stone-400 mb-6">
             <Link :href="route('cases.index')" class="hover:text-blue-700 transition-colors">القضايا</Link>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-            <span class="text-stone-600 font-medium truncate max-w-[200px]" dir="auto">{{ case.title }}</span>
+            <span class="text-stone-600 font-medium truncate max-w-[200px]" dir="auto">{{ legalCase.title }}</span>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -75,27 +77,27 @@ const deleteCase = () => {
                     <div class="p-6 border-b border-stone-100 flex items-start justify-between gap-4">
                         <div>
                             <div class="flex items-center gap-3 mb-2">
-                                <span class="font-mono text-sm text-stone-500 bg-stone-100 px-2.5 py-1 rounded-lg" dir="ltr">{{ case.case_number }}</span>
+                                <span class="font-mono text-sm text-stone-500 bg-stone-100 px-2.5 py-1 rounded-lg" dir="ltr">{{ legalCase.case_number }}</span>
                                 <span
                                     class="px-2.5 py-1 rounded-lg text-xs font-bold"
                                     :class="{
-                                        'bg-emerald-100 text-emerald-700': case.status === 'active',
-                                        'bg-stone-100 text-stone-600': case.status === 'closed',
-                                        'bg-blue-100 text-blue-700': case.status === 'judged',
-                                        'bg-orange-100 text-orange-700': case.status === 'postponed'
+                                        'bg-emerald-100 text-emerald-700': legalCase.status === 'active',
+                                        'bg-stone-100 text-stone-600': legalCase.status === 'closed',
+                                        'bg-blue-100 text-blue-700': legalCase.status === 'judged',
+                                        'bg-orange-100 text-orange-700': legalCase.status === 'postponed'
                                     }"
                                 >
                                     {{ 
-                                        case.status === 'active' ? 'جارية' : 
-                                        (case.status === 'closed' ? 'مغلقة' : 
-                                        (case.status === 'judged' ? 'محكوم بها' : 'مؤجلة')) 
+                                        legalCase.status === 'active' ? 'جارية' : 
+                                        (legalCase.status === 'closed' ? 'مغلقة' : 
+                                        (legalCase.status === 'judged' ? 'محكوم بها' : 'مؤجلة')) 
                                     }}
                                 </span>
                             </div>
-                            <h2 class="text-2xl font-black text-stone-800">{{ case.title }}</h2>
-                            <p class="text-sm font-semibold text-blue-600 mt-2">نوع القضية: {{ case.case_type }}</p>
+                            <h2 class="text-2xl font-black text-stone-800">{{ legalCase.title }}</h2>
+                            <p class="text-sm font-semibold text-blue-600 mt-2">نوع القضية: {{ legalCase.case_type }}</p>
                         </div>
-                        <Link :href="route('cases.edit', case.id)" class="shrink-0 p-2.5 bg-stone-50 text-stone-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors" title="تعديل القضية">
+                        <Link :href="route('cases.edit', legalCase.id)" class="shrink-0 p-2.5 bg-stone-50 text-stone-600 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors" title="تعديل القضية">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                         </Link>
                     </div>
@@ -108,14 +110,14 @@ const deleteCase = () => {
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                                     المحكمة المختصة
                                 </p>
-                                <p class="text-sm font-medium text-stone-800">{{ case.court || '—' }}</p>
+                                <p class="text-sm font-medium text-stone-800">{{ legalCase.court || '—' }}</p>
                             </div>
                             <div>
                                 <p class="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                     تاريخ الرفع
                                 </p>
-                                <p class="text-sm font-medium text-stone-800">{{ case.filed_at || '—' }}</p>
+                                <p class="text-sm font-medium text-stone-800">{{ legalCase.filed_at || '—' }}</p>
                             </div>
                             <!-- Opponent Details -->
                             <div>
@@ -123,21 +125,21 @@ const deleteCase = () => {
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                                     اسم الخصم
                                 </p>
-                                <p class="text-sm font-medium text-stone-800">{{ case.opponent_name || '—' }}</p>
+                                <p class="text-sm font-medium text-stone-800">{{ legalCase.opponent_name || '—' }}</p>
                             </div>
                             <div>
                                 <p class="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
                                     محامي الخصم
                                 </p>
-                                <p class="text-sm font-medium text-stone-800">{{ case.opponent_lawyer || '—' }}</p>
+                                <p class="text-sm font-medium text-stone-800">{{ legalCase.opponent_lawyer || '—' }}</p>
                             </div>
                         </div>
 
                         <!-- Description -->
-                        <div v-if="case.description" class="pt-6 border-t border-stone-100">
+                        <div v-if="legalCase.description" class="pt-6 border-t border-stone-100">
                             <p class="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">وصف القضية وملخصها</p>
-                            <div class="text-sm text-stone-700 whitespace-pre-wrap leading-relaxed">{{ case.description }}</div>
+                            <div class="text-sm text-stone-700 whitespace-pre-wrap leading-relaxed">{{ legalCase.description }}</div>
                         </div>
                     </div>
                 </div>
@@ -154,7 +156,7 @@ const deleteCase = () => {
                         </button>
                     </div>
 
-                    <div v-if="case.sessions.length === 0" class="p-8 text-center bg-stone-50/50">
+                    <div v-if="legalCase.sessions.length === 0" class="p-8 text-center bg-stone-50/50">
                         <div class="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
                             <svg class="w-8 h-8 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
@@ -167,9 +169,9 @@ const deleteCase = () => {
                         <div class="absolute right-9 top-8 bottom-8 w-px bg-stone-200"></div>
                         
                         <div class="space-y-6">
-                            <div v-for="(session, index) in case.sessions" :key="session.id" class="relative pl-4 pr-10">
+                            <div v-for="(session, index) in legalCase.sessions" :key="session.id" class="relative pl-4 pr-10">
                                 <!-- Timeline Dot -->
-                                <div class="absolute right-[5px] top-1.5 w-3 h-3 rounded-full border-2 border-white shadow-sm z-10" :class="index === case.sessions.length - 1 ? 'bg-orange-500' : 'bg-stone-300'"></div>
+                                <div class="absolute right-[5px] top-1.5 w-3 h-3 rounded-full border-2 border-white shadow-sm z-10" :class="index === legalCase.sessions.length - 1 ? 'bg-orange-500' : 'bg-stone-300'"></div>
                                 
                                 <div class="bg-stone-50 border border-stone-200/80 rounded-xl p-4 hover:shadow-md transition-shadow relative group">
                                     <!-- Delete Session Button -->
@@ -182,7 +184,7 @@ const deleteCase = () => {
                                     </button>
 
                                     <div class="flex items-center gap-3 mb-3">
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-sm font-bold" :class="index === case.sessions.length - 1 ? 'bg-orange-100 text-orange-700' : 'bg-stone-200 text-stone-700'">
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-sm font-bold" :class="index === legalCase.sessions.length - 1 ? 'bg-orange-100 text-orange-700' : 'bg-stone-200 text-stone-700'">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                                             {{ session.session_date }}
                                         </span>
@@ -210,13 +212,13 @@ const deleteCase = () => {
                     <h3 class="text-sm font-bold text-stone-800 mb-4 pb-2 border-b border-stone-100">الموكل المرتبط</h3>
                     <div class="flex items-center gap-3 mb-4">
                         <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-lg shrink-0">
-                            {{ case.client.name.charAt(0) }}
+                            {{ legalCase.client.name.charAt(0) }}
                         </div>
                         <div>
-                            <Link :href="route('clients.show', case.client.id)" class="text-base font-bold text-stone-800 hover:text-blue-700 transition-colors">
-                                {{ case.client.name }}
+                            <Link :href="route('clients.show', legalCase.client.id)" class="text-base font-bold text-stone-800 hover:text-blue-700 transition-colors">
+                                {{ legalCase.client.name }}
                             </Link>
-                            <p class="text-xs text-stone-500 mt-0.5" dir="ltr">{{ case.client.phone || 'بدون رقم' }}</p>
+                            <p class="text-xs text-stone-500 mt-0.5" dir="ltr">{{ legalCase.client.phone || 'بدون رقم' }}</p>
                         </div>
                     </div>
                 </div>
@@ -232,10 +234,10 @@ const deleteCase = () => {
                     
                     <!-- Notes List -->
                     <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-                        <div v-if="case.notes.length === 0" class="text-center py-8">
+                        <div v-if="legalCase.notes.length === 0" class="text-center py-8">
                             <p class="text-stone-400 text-sm">لا توجد ملاحظات</p>
                         </div>
-                        <div v-for="note in case.notes" :key="note.id" class="bg-white p-3 rounded-xl border border-stone-200/60 shadow-sm">
+                        <div v-for="note in legalCase.notes" :key="note.id" class="bg-white p-3 rounded-xl border border-stone-200/60 shadow-sm">
                             <div class="flex justify-between items-start mb-2">
                                 <span class="text-xs font-bold text-stone-800">{{ note.user_name }}</span>
                                 <span class="text-[10px] text-stone-400" dir="ltr">{{ note.created_at }}</span>

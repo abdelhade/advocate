@@ -26,7 +26,7 @@ const submit = () => {
 </script>
 
 <template>
-    <Head :title="`تعديل القضية: ${case.title}`" />
+    <Head :title="`تعديل القضية: ${props.case.title}`" />
 
     <TenantLayout>
         <template #title>تعديل القضية</template>
@@ -35,7 +35,7 @@ const submit = () => {
         <div class="flex items-center gap-2 text-sm text-stone-400 mb-6">
             <Link :href="route('cases.index')" class="hover:text-blue-700 transition-colors">القضايا</Link>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-            <Link :href="route('cases.show', case.id)" class="hover:text-blue-700 transition-colors truncate max-w-[150px]">{{ case.title }}</Link>
+            <Link :href="route('cases.show', props.case.id)" class="hover:text-blue-700 transition-colors truncate max-w-[150px]">{{ props.case.title }}</Link>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
             <span class="text-stone-600 font-medium">تعديل</span>
         </div>
@@ -145,7 +145,7 @@ const submit = () => {
                         <button type="submit" :disabled="form.processing" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-700 hover:bg-blue-800 text-white text-sm font-bold rounded-xl transition-all duration-200 disabled:opacity-50 shadow-sm hover:shadow-blue-200">
                             {{ form.processing ? 'جارٍ الحفظ...' : 'حفظ التعديلات' }}
                         </button>
-                        <Link :href="route('cases.show', case.id)" class="px-6 py-3 border border-stone-200 text-stone-600 text-sm font-semibold rounded-xl hover:bg-stone-50 transition-colors">إلغاء</Link>
+                        <Link :href="route('cases.show', props.case.id)" class="px-6 py-3 border border-stone-200 text-stone-600 text-sm font-semibold rounded-xl hover:bg-stone-50 transition-colors">إلغاء</Link>
                     </div>
                 </form>
             </div>
