@@ -1,9 +1,29 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const page = usePage();
 const isSidebarOpen = ref(false);
+const deferredPrompt = ref(null);
+const canInstall = ref(false);
+
+onMounted(() => {
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt.value = e;
+        canInstall.value = true;
+    });
+});
+
+const installApp = async () => {
+    if (!deferredPrompt.value) return;
+    deferredPrompt.value.prompt();
+    const { outcome } = await deferredPrompt.value.userChoice;
+    if (outcome === 'accepted') {
+        canInstall.value = false;
+    }
+    deferredPrompt.value = null;
+};
 
 const navigation = [
     { name: 'لوحة التحكم', href: route('dashboard'), icon: 'M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z', active: route().current('dashboard') },
@@ -53,8 +73,16 @@ const navigation = [
                 </Link>
             </nav>
 
-            <!-- User Info & Logout -->
-            <div class="p-4 border-t border-stone-100/80 shrink-0 bg-stone-50/50">
+            <!-- User Profile & Install -->
+            <div class="p-6 border-t border-stone-100/80 bg-stone-50/50">
+                <button
+                    v-if="canInstall"
+                    @click="installApp"
+                    class="w-full mb-3 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-700 text-white rounded-xl text-xs font-black hover:bg-blue-800 transition-all shadow-md shadow-blue-200"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    تثبيت تطبيق جلسات
+                </button>
                 <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white border border-stone-200/80 shadow-sm mb-2">
                     <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-bold text-sm shrink-0">
                         {{ $page.props.auth.user.name.charAt(0) }}
