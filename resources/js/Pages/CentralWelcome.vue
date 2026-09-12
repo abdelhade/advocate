@@ -50,7 +50,7 @@ const stats = [
 </script>
 
 <template>
-    <Head title="أدفوكيت - نظام إدارة مكاتب المحاماة" />
+    <Head title="جلسات - نظام إدارة مكاتب المحاماة" />
 
     <div class="min-h-screen bg-white text-stone-900 font-sans selection:bg-red-600 selection:text-white">
 
@@ -62,7 +62,7 @@ const stats = [
                         <div class="w-11 h-11 rounded-xl bg-red-700 flex items-center justify-center text-white">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
                         </div>
-                        <span class="text-2xl font-bold text-stone-800">أدفوكيت</span>
+                        <span class="text-2xl font-bold text-stone-800">جلسات</span>
                     </div>
 
                     <div class="hidden md:flex items-center gap-8">
@@ -366,7 +366,7 @@ const stats = [
                             انضم إلى مكاتب المحاماة الرائدة التي تعتمد على منصتنا لتنظيم أعمالها وتحسين تجربة موكليها.
                         </p>
                         <div class="flex flex-col sm:flex-row justify-center gap-4">
-                            <a href="mailto:info@advocate.sa" class="px-8 py-4 bg-white text-red-800 font-bold rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-lg">
+                            <a href="mailto:info@jalsat.sa" class="px-8 py-4 bg-white text-red-800 font-bold rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 text-lg">
                                 تواصل معنا الآن
                             </a>
                             <a href="https://wa.me/" class="px-8 py-4 bg-red-800 hover:bg-red-900 text-white font-bold rounded-xl border border-red-600 transition-all duration-300 hover:-translate-y-1 text-lg flex items-center justify-center gap-2">
@@ -386,10 +386,10 @@ const stats = [
                     <div class="w-9 h-9 rounded-xl bg-red-700 flex items-center justify-center text-white">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
                     </div>
-                    <span class="text-xl font-bold text-stone-800">أدفوكيت</span>
+                    <span class="text-xl font-bold text-stone-800">جلسات</span>
                 </div>
                 <p class="text-stone-400 text-sm">
-                    &copy; {{ new Date().getFullYear() }} جميع الحقوق محفوظة لبرنامج أدفوكيت لإدارة مكاتب المحاماة.
+                    &copy; {{ new Date().getFullYear() }} جميع الحقوق محفوظة لبرنامج جلسات لإدارة مكاتب المحاماة.
                 </p>
                 <div class="flex gap-4">
                     <a href="#" class="text-stone-400 hover:text-red-700 transition-colors duration-300">

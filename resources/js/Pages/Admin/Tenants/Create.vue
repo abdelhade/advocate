@@ -65,7 +65,7 @@ const submit = () => {
                             type="text"
                             v-model="form.domain"
                             required
-                            placeholder="مثال: alfahd.advocate.test"
+                            placeholder="مثال: alfahd.jalsat.test"
                             dir="ltr"
                             class="w-full px-4 py-3 rounded-xl border border-stone-300 bg-stone-50 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all text-left"
                             :class="{ 'border-red-500 ring-1 ring-red-500': form.errors.domain }"
