@@ -17,19 +17,42 @@ const errors = ref({})
 const loading = ref(false)
 const successMessage = ref('')
 
-const hostName = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost' 
-  ? 'localhost' 
-  : window.location.hostname
+const availableDomains = ref([
+  { label: 'jalsateg.com (النطاق الرئيسي)', value: 'jalsateg.com' },
+  { label: 'jalsat.sa (النطاق السعودي)', value: 'jalsat.sa' },
+  { label: 'jalsat.app (النطاق السريع)', value: 'jalsat.app' },
+])
+
+const isDev = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+const currentHost = isDev ? 'localhost' : window.location.hostname
+const selectedDomain = ref(availableDomains.value.some(d => d.value === currentHost) ? currentHost : 'jalsateg.com')
+
+const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:'
+const portSuffix = (isDev && window.location.port) ? `:${window.location.port}` : ''
 
 const formattedSubdomain = computed(() => {
   if (!form.value.subdomain) return ''
-  const clean = form.value.subdomain.toLowerCase().replace(/[^a-z0-9-]/g, '')
-  return `${clean}.${hostName}:${window.location.port || 8080}`
+  const clean = form.value.subdomain.toLowerCase().trim().replace(/[^a-z0-9-]/g, '')
+  const domain = isDev ? 'localhost' : selectedDomain.value
+  return `${protocol}//${clean}.${domain}${portSuffix}`
 })
 
 const autoSlug = () => {
   if (!form.value.subdomain && form.value.office_name) {
-    form.value.subdomain = 'office-' + Math.floor(1000 + Math.random() * 9000)
+    // Convert common office names or fallback to office-slug
+    const name = form.value.office_name.trim().toLowerCase()
+    let slug = name
+      .replace(/[^\u0621-\u064A0-9a-zA-Z\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/مكتب|للمحاماة|والاستشارات|القانونية/g, '')
+      .trim()
+    
+    if (!slug || slug.length < 2) {
+      slug = 'office-' + Math.floor(1000 + Math.random() * 9000)
+    } else {
+      slug = 'office-' + Math.floor(100 + Math.random() * 900)
+    }
+    form.value.subdomain = slug.replace(/[^a-z0-9-]/g, '')
   }
 }
 
@@ -123,25 +146,49 @@ const submit = async () => {
             </div>
           </div>
 
-          <!-- Subdomain Slug -->
-          <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1.5">رابط المكتب الخاط (Subdomain) *</label>
-            <div class="relative flex items-center dir-ltr">
-              <span class="inline-flex items-center px-3.5 py-3 rounded-l-xl border border-r-0 border-stone-200 bg-stone-100 text-stone-600 text-xs font-mono font-bold">
-                .{{ hostName }}
-              </span>
-              <input 
-                v-model="form.subdomain"
-                type="text"
-                required
-                placeholder="alfahd"
-                class="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-r-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 text-sm font-mono transition text-left"
-              />
+          <!-- Subdomain & Domain Selection -->
+          <div class="bg-stone-50 p-4 rounded-2xl border border-stone-200 space-y-3">
+            <div class="flex justify-between items-center">
+              <label class="block text-xs font-bold text-stone-800">رابط النطاق الفرعي الخاص بمكتبك (Subdomain) *</label>
+              <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">نطاق خاص ومستقل 🔒</span>
             </div>
-            <p v-if="formattedSubdomain" class="mt-1.5 text-xs font-bold text-red-700 dir-rtl">
-              🌐 رابط مكتبك المخصص: <span class="font-mono dir-ltr font-extrabold text-stone-800">http://{{ formattedSubdomain }}</span>
-            </p>
-            <p v-if="errors.subdomain" class="mt-1 text-xs font-bold text-rose-600">{{ errors.subdomain[0] }}</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 dir-ltr">
+              <!-- Subdomain Slug Input -->
+              <div class="sm:col-span-7 relative">
+                <input 
+                  v-model="form.subdomain"
+                  type="text"
+                  required
+                  placeholder="alfahd"
+                  class="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 text-sm font-mono text-left"
+                />
+              </div>
+
+              <!-- Domain Selector Dropdown -->
+              <div class="sm:col-span-5">
+                <select
+                  v-model="selectedDomain"
+                  class="w-full px-3 py-2.5 bg-white border border-stone-300 rounded-xl text-stone-800 text-xs font-mono font-bold focus:outline-none focus:border-red-600"
+                >
+                  <option v-for="d in availableDomains" :key="d.value" :value="d.value">
+                    .{{ d.value }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Live Subdomain URL Preview Badge -->
+            <div v-if="formattedSubdomain" class="p-3 bg-white border border-stone-200 rounded-xl flex items-center justify-between gap-2 text-xs dir-rtl">
+              <div class="flex items-center gap-2 overflow-hidden">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0 animate-pulse"></span>
+                <span class="text-stone-500 font-bold flex-shrink-0">رابط مكتبك المستقل:</span>
+                <span class="font-mono dir-ltr font-black text-red-700 truncate">{{ formattedSubdomain }}</span>
+              </div>
+              <span class="text-[10px] font-bold text-stone-400 bg-stone-100 px-2 py-1 rounded-md flex-shrink-0">متاح للمكتب</span>
+            </div>
+
+            <p v-if="errors.subdomain" class="text-xs font-bold text-rose-600 dir-rtl">{{ errors.subdomain[0] }}</p>
           </div>
 
           <!-- Email & Phone -->
