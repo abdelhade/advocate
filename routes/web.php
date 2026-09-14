@@ -21,39 +21,43 @@ use App\Http\Middleware\AdminAuthenticated;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+use Illuminate\Support\Facades\Cache;
+
 // Central / Home Routes
 Route::get('/', function () {
-    $tenantCount = \App\Models\Tenant::count();
-    $clientCount = \App\Models\Client::withoutGlobalScopes()->count();
-    $caseCount = \App\Models\LegalCase::withoutGlobalScopes()->count();
-    $invoiceCount = \App\Models\Invoice::withoutGlobalScopes()->count();
+    $data = Cache::remember('central_welcome_stats', 3600, function () {
+        $tenantCount = \App\Models\Tenant::count();
+        $clientCount = \App\Models\Client::withoutGlobalScopes()->count();
+        $caseCount = \App\Models\LegalCase::withoutGlobalScopes()->count();
+        $invoiceCount = \App\Models\Invoice::withoutGlobalScopes()->count();
 
-    $formatNumber = function ($number) {
-        if ($number >= 1000000) {
-            return '+' . round($number / 1000000, 1) . ' مليون';
-        }
-        if ($number >= 1000) {
-            return '+' . round($number / 1000, 1) . ' ألف';
-        }
-        return '+' . number_format($number);
-    };
+        $formatNumber = function ($number) {
+            if ($number >= 1000000) {
+                return '+' . round($number / 1000000, 1) . ' مليون';
+            }
+            if ($number >= 1000) {
+                return '+' . round($number / 1000, 1) . ' ألف';
+            }
+            return '+' . number_format($number);
+        };
 
-    $stats = [
-        ['value' => $formatNumber($tenantCount), 'label' => 'مكتب محاماة'],
-        ['value' => $formatNumber($clientCount), 'label' => 'موكل مخدوم'],
-        ['value' => $formatNumber($caseCount), 'label' => 'قضية مُدارة'],
-        ['value' => $formatNumber($invoiceCount), 'label' => 'فاتورة ومطالبة أتعاب'],
-    ];
+        return [
+            'stats' => [
+                ['value' => $formatNumber($tenantCount), 'label' => 'مكتب محاماة'],
+                ['value' => $formatNumber($clientCount), 'label' => 'موكل مخدوم'],
+                ['value' => $formatNumber($caseCount), 'label' => 'قضية مُدارة'],
+                ['value' => $formatNumber($invoiceCount), 'label' => 'فاتورة ومطالبة أتعاب'],
+            ],
+            'realCounts' => [
+                'tenants' => $tenantCount,
+                'clients' => $clientCount,
+                'cases' => $caseCount,
+                'invoices' => $invoiceCount,
+            ],
+        ];
+    });
 
-    return Inertia::render('CentralWelcome', [
-        'stats' => $stats,
-        'realCounts' => [
-            'tenants' => $tenantCount,
-            'clients' => $clientCount,
-            'cases' => $caseCount,
-            'invoices' => $invoiceCount,
-        ],
-    ]);
+    return Inertia::render('CentralWelcome', $data);
 });
 
 Route::get('/pricing', function () {
