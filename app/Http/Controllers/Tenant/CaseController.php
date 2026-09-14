@@ -102,7 +102,7 @@ class CaseController extends Controller
 
         $case->load(['client', 'sessions' => function ($query) {
             $query->orderBy('session_date', 'asc');
-        }, 'parties', 'documents.uploader', 'primaryLawyer']);
+        }, 'parties', 'documents.uploader', 'primaryLawyer', 'tasks.assignee', 'invoices', 'expenses']);
 
         return Inertia::render('Tenant/Cases/Show', [
             'case' => [
@@ -144,6 +144,33 @@ class CaseController extends Controller
                         'file_size' => round($doc->file_size / 1024, 2) . ' KB',
                         'uploader_name' => $doc->uploader?->name,
                         'created_at' => $doc->created_at->format('Y-m-d H:i'),
+                    ];
+                }),
+                'tasks' => $case->tasks->map(function ($task) {
+                    return [
+                        'id' => $task->id,
+                        'title' => $task->title,
+                        'status' => $task->status,
+                        'priority' => $task->priority,
+                        'assignee_name' => $task->assignee?->name,
+                        'due_date' => $task->due_date ? $task->due_date->format('Y-m-d') : null,
+                    ];
+                }),
+                'invoices' => $case->invoices->map(function ($inv) {
+                    return [
+                        'id' => $inv->id,
+                        'invoice_number' => $inv->invoice_number,
+                        'total_amount' => $inv->total_amount,
+                        'paid_amount' => $inv->paid_amount,
+                        'status' => $inv->status,
+                    ];
+                }),
+                'expenses' => $case->expenses->map(function ($exp) {
+                    return [
+                        'id' => $exp->id,
+                        'category' => $exp->category,
+                        'amount' => $exp->amount,
+                        'expense_date' => $exp->expense_date->format('Y-m-d'),
                     ];
                 }),
             ],

@@ -55,6 +55,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Alias for activeTenant with fallback for tests context.
+     */
+    public function currentTenant(): ?Tenant
+    {
+        return $this->activeTenant() ?? $this->tenants()->first();
+    }
+
+    /**
      * Check if user is owner of a specific tenant.
      */
     public function isOwnerOf(Tenant|string $tenant): bool

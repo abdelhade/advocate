@@ -13,7 +13,7 @@ class AdminSeeder extends Seeder
             ['username' => 'hadi'],
             [
                 'name' => 'hadi',
-                'password' => '423456',
+                'password' => '00000000',
             ]
         );
     }

@@ -7,10 +7,15 @@ use App\Http\Controllers\Admin\AdminTenantController;
 use App\Http\Controllers\Central\RegisterController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Tenant\AuditLogController;
 use App\Http\Controllers\Tenant\CaseController;
 use App\Http\Controllers\Tenant\ClientController;
 use App\Http\Controllers\Tenant\DashboardController;
+use App\Http\Controllers\Tenant\ExpenseController;
+use App\Http\Controllers\Tenant\InvoiceController;
+use App\Http\Controllers\Tenant\PaymentController;
 use App\Http\Controllers\Tenant\SessionController;
+use App\Http\Controllers\Tenant\TaskController;
 use App\Http\Controllers\TenantSwitchController;
 use App\Http\Middleware\AdminAuthenticated;
 use Illuminate\Support\Facades\Route;
@@ -69,6 +74,18 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('cases', CaseController::class);
     Route::post('cases/{case}/sessions', [SessionController::class, 'store'])->name('cases.sessions.store');
     Route::delete('cases/{case}/sessions/{session}', [SessionController::class, 'destroy'])->name('cases.sessions.destroy');
+
+    // Tasks Management
+    Route::resource('tasks', TaskController::class)->except(['create', 'edit', 'show']);
+    Route::patch('tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
+
+    // Financials: Invoices, Payments, Expenses
+    Route::resource('invoices', InvoiceController::class)->except(['edit', 'update']);
+    Route::resource('payments', PaymentController::class)->only(['index', 'store', 'destroy']);
+    Route::resource('expenses', ExpenseController::class)->only(['index', 'store', 'destroy']);
+
+    // Audit Logs
+    Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
 
     // Document Upload & Secure Private Streamed Download
     Route::post('documents', [DocumentController::class, 'store'])->name('documents.store');

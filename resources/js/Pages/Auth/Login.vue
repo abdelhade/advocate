@@ -26,18 +26,18 @@ const submit = () => {
 <template>
     <Head title="تسجيل الدخول - منصة جلسات" />
 
-    <div class="min-h-screen bg-stone-50 text-stone-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans dir-rtl selection:bg-blue-700 selection:text-white">
-        <!-- Top Blue Accent Line -->
-        <div class="fixed top-0 left-0 right-0 h-1.5 bg-blue-700"></div>
+    <div class="min-h-screen bg-stone-50 text-stone-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans dir-rtl selection:bg-red-600 selection:text-white">
+        <!-- Top Red Accent Line -->
+        <div class="fixed top-0 left-0 right-0 h-1.5 bg-red-700"></div>
 
         <!-- Header Brand -->
         <div class="sm:mx-auto sm:w-full sm:max-w-md text-center">
-            <div class="inline-flex items-center gap-3">
-                <div class="w-12 h-12 rounded-2xl bg-blue-700 flex items-center justify-center text-white shadow-lg shadow-blue-700/20">
+            <Link href="/" class="inline-flex items-center gap-3">
+                <div class="w-12 h-12 rounded-2xl bg-red-700 flex items-center justify-center text-white shadow-lg shadow-red-700/20">
                     <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
                 </div>
                 <span class="text-3xl font-black text-stone-900 tracking-tight">منصة جلسات</span>
-            </div>
+            </Link>
             <h2 class="mt-4 text-2xl font-black text-stone-900 tracking-tight">
                 تسجيل الدخول للمكتب
             </h2>
@@ -67,7 +67,7 @@ const submit = () => {
                             autofocus
                             autocomplete="username"
                             placeholder="lawyer@example.com"
-                            class="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-700 text-sm font-medium transition"
+                            class="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 text-sm font-medium transition"
                         />
                         <p v-if="form.errors.email" class="mt-1 text-xs font-bold text-rose-600">{{ form.errors.email }}</p>
                     </div>
@@ -79,7 +79,7 @@ const submit = () => {
                             <Link
                                 v-if="canResetPassword"
                                 :href="route('password.request')"
-                                class="text-xs font-bold text-blue-700 hover:underline"
+                                class="text-xs font-bold text-red-700 hover:underline"
                             >
                                 نسيت كلمة المرور؟
                             </Link>
@@ -91,7 +91,7 @@ const submit = () => {
                             required
                             autocomplete="current-password"
                             placeholder="••••••••"
-                            class="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-700 text-sm font-medium transition"
+                            class="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 text-sm font-medium transition"
                         />
                         <p v-if="form.errors.password" class="mt-1 text-xs font-bold text-rose-600">{{ form.errors.password }}</p>
                     </div>
@@ -102,7 +102,7 @@ const submit = () => {
                             <input
                                 type="checkbox"
                                 v-model="form.remember"
-                                class="w-4 h-4 text-blue-700 rounded border-stone-300 focus:ring-blue-500 transition cursor-pointer"
+                                class="w-4 h-4 text-red-700 rounded border-stone-300 focus:ring-red-500 transition cursor-pointer"
                             />
                             <span class="ms-2.5 text-xs font-bold text-stone-600">تذكر تسجيل دخولي</span>
                         </label>
@@ -112,12 +112,19 @@ const submit = () => {
                     <button
                         type="submit"
                         :disabled="form.processing"
-                        class="w-full mt-2 py-3.5 px-6 bg-blue-700 hover:bg-blue-800 text-white font-black text-sm rounded-xl shadow-lg shadow-blue-700/20 hover:shadow-blue-700/30 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                        class="w-full mt-2 py-3.5 px-6 bg-red-700 hover:bg-red-800 text-white font-black text-sm rounded-xl shadow-lg shadow-red-700/20 hover:shadow-red-700/30 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                     >
                         <svg v-if="form.processing" class="w-5 h-5 animate-spin text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                         <span>{{ form.processing ? 'جاري التحقق والتحميل...' : 'تسجيل الدخول' }}</span>
                     </button>
                 </form>
+
+                <div class="mt-6 text-center border-t border-stone-100 pt-5 flex items-center justify-center gap-3 text-xs font-semibold text-stone-500">
+                    <span>ليس لديك مكتب بعد؟</span>
+                    <Link href="/register" class="text-red-700 font-bold hover:underline">إنشاء مكتب جديد</Link>
+                    <span class="text-stone-300">•</span>
+                    <Link href="/" class="text-stone-500 hover:text-stone-800 transition">الرئيسية</Link>
+                </div>
             </div>
         </div>
     </div>

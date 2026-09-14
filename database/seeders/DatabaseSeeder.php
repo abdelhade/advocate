@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
         $admin = User::create([
             'name' => 'مدير النظام الرئيسي',
             'email' => 'admin@advocate.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('00000000'),
             'phone' => '01000000000',
             'status' => 'active',
             'is_super_admin' => true,
@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
         $lawyer = User::create([
             'name' => 'المحامي أحمد علي',
             'email' => 'ahmed@law.com',
-            'password' => Hash::make('password'),
+            'password' => Hash::make('00000000'),
             'phone' => '01111111111',
             'status' => 'active',
             'is_super_admin' => false,
@@ -99,5 +99,8 @@ class DatabaseSeeder extends Seeder
             'status' => 'active',
             'primary_lawyer_id' => $lawyer->id,
         ]);
+
+        // Uncomment the line below to seed 1,000 tenants with clients, cases, and invoices:
+        // $this->call(LargeScaleSeeder::class);
     }
 }

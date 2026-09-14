@@ -208,11 +208,11 @@ const submit = async () => {
           </button>
         </form>
 
-        <div class="mt-6 text-center border-t border-stone-100 pt-5">
-          <p class="text-xs font-semibold text-stone-500">
-            لديك حساب أو مكتب بالفعل؟ 
-            <Link href="/" class="text-red-700 font-bold hover:underline">العودة للصفحة الرئيسية</Link>
-          </p>
+        <div class="mt-6 text-center border-t border-stone-100 pt-5 flex items-center justify-center gap-3 text-xs font-semibold text-stone-500">
+          <span>لديك حساب بالفعل؟</span>
+          <Link href="/login" class="text-red-700 font-bold hover:underline">تسجيل الدخول</Link>
+          <span class="text-stone-300">•</span>
+          <Link href="/" class="text-stone-500 hover:text-stone-800 transition">الصفحة الرئيسية</Link>
         </div>
       </div>
     </div>

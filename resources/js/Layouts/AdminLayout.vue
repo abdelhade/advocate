@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 
+const page = usePage();
 const admin = computed(() => page.props.auth?.user || page.props.auth?.admin || { name: 'مدير النظام' });
 
 const sidebarOpen = ref(false);
