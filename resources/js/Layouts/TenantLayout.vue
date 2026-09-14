@@ -1,8 +1,10 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 
 const page = usePage();
+const activeTenant = computed(() => page.props.auth?.active_tenant);
+
 const isSidebarOpen = ref(false);
 const deferredPrompt = ref(null);
 const canInstall = ref(false);
@@ -96,7 +98,7 @@ const navigation = [
                 </Link>
             </nav>
 
-            <!-- User Profile & Install -->
+            <!-- User Profile & Subscription Info -->
             <div class="p-6 border-t border-stone-100/80 bg-stone-50/50">
                 <button
                     v-if="canInstall"
@@ -114,6 +116,12 @@ const navigation = [
                         <p class="text-sm font-bold text-stone-800 truncate">{{ $page.props.auth.user.name }}</p>
                         <p class="text-[11px] text-stone-400 truncate" dir="ltr">{{ $page.props.auth.user.email }}</p>
                     </div>
+                </div>
+
+                <!-- Sidebar Subscription Validity Date -->
+                <div v-if="activeTenant?.expires_at" class="mt-2 text-center text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-3 py-1.5 rounded-xl flex items-center justify-center gap-1.5 shadow-sm">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>صالح حتى {{ activeTenant.expires_at }}</span>
                 </div>
                 <div class="flex gap-2">
                     <Link :href="route('profile.edit')" class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-stone-600 hover:bg-stone-100 transition-colors">
@@ -175,15 +183,27 @@ const navigation = [
                 </div>
             </header>
 
-            <!-- Trial Banner -->
-            <div class="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 px-4 py-2.5 text-xs sm:text-sm font-bold flex items-center shadow-sm border-b border-amber-600/20">
+            <!-- Subscription Status Banner -->
+            <div v-if="activeTenant?.is_trial" class="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 px-4 py-2.5 text-xs sm:text-sm font-bold flex items-center shadow-sm border-b border-amber-600/20">
                 <div class="flex items-center gap-2 max-w-7xl mx-auto w-full justify-between">
                     <span class="flex items-center gap-2">
                         <span class="p-1 bg-slate-950/10 rounded-lg">🎁</span>
                         <span>فترة تجريبية مجانية لمكتبك</span>
-                        <span class="bg-slate-950 text-amber-400 px-2.5 py-0.5 rounded-full text-xs font-black">متبقي 15 يوماً</span>
+                        <span class="bg-slate-950 text-amber-400 px-2.5 py-0.5 rounded-full text-xs font-black">متبقي {{ activeTenant?.days_left ?? 15 }} يوماً</span>
                     </span>
                     <span class="text-xs font-bold text-slate-900 opacity-90 hidden sm:inline">جميع الميزات مفعلة بالكامل لمكتبك الجديد</span>
+                </div>
+            </div>
+
+            <!-- Active / Extended Subscription Banner -->
+            <div v-else-if="activeTenant?.expires_at" class="bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-800 text-white px-4 py-2 text-xs sm:text-sm font-bold flex items-center shadow-sm">
+                <div class="flex items-center gap-2 max-w-7xl mx-auto w-full justify-between">
+                    <span class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span>اشتراك المكتب نشط ومفعل</span>
+                        <span class="bg-white/20 text-white px-2.5 py-0.5 rounded-full text-xs font-mono font-bold">صالح حتى {{ activeTenant.expires_at }}</span>
+                    </span>
+                    <span class="text-xs font-bold text-emerald-100 opacity-90 hidden sm:inline">مكتبك يعمل بجميع الصلاحيات والمزايا</span>
                 </div>
             </div>
 
