@@ -23,6 +23,17 @@ class AdminTenantController extends Controller
 
         $tenants = $query->paginate(20)->through(function ($tenant) {
             $owner = $tenant->users->firstWhere('pivot.is_owner', true);
+            $settings = $tenant->settings ?? [];
+
+            $startDate = $tenant->created_at ? $tenant->created_at->format('Y-m-d') : '-';
+            
+            if (!empty($settings['expires_at'])) {
+                $endDate = \Carbon\Carbon::parse($settings['expires_at'])->format('Y-m-d');
+            } elseif ($tenant->status === 'active') {
+                $endDate = $tenant->created_at ? $tenant->created_at->addYear()->format('Y-m-d') : '-';
+            } else {
+                $endDate = $tenant->created_at ? $tenant->created_at->addDays(15)->format('Y-m-d') : '-';
+            }
 
             return [
                 'id' => $tenant->id,
@@ -33,7 +44,9 @@ class AdminTenantController extends Controller
                 'phone' => $tenant->phone ?? '-',
                 'status' => $tenant->status,
                 'users_count' => $tenant->users->count(),
-                'created_at' => $tenant->created_at ? $tenant->created_at->format('Y-m-d H:i') : '-',
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'created_at' => $startDate,
             ];
         });
 
@@ -46,6 +59,16 @@ class AdminTenantController extends Controller
     public function show(string $id)
     {
         $tenant = Tenant::with('users')->findOrFail($id);
+        $settings = $tenant->settings ?? [];
+        $startDate = $tenant->created_at ? $tenant->created_at->format('Y-m-d') : '-';
+        
+        if (!empty($settings['expires_at'])) {
+            $endDate = \Carbon\Carbon::parse($settings['expires_at'])->format('Y-m-d');
+        } elseif ($tenant->status === 'active') {
+            $endDate = $tenant->created_at ? $tenant->created_at->addYear()->format('Y-m-d') : '-';
+        } else {
+            $endDate = $tenant->created_at ? $tenant->created_at->addDays(15)->format('Y-m-d') : '-';
+        }
 
         return Inertia::render('Admin/Tenants/Show', [
             'tenant' => [
@@ -55,6 +78,8 @@ class AdminTenantController extends Controller
                 'email' => $tenant->email,
                 'phone' => $tenant->phone,
                 'status' => $tenant->status,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
                 'users' => $tenant->users->map(fn ($u) => [
                     'id' => $u->id,
                     'name' => $u->name,
@@ -62,7 +87,7 @@ class AdminTenantController extends Controller
                     'is_owner' => (bool) $u->pivot->is_owner,
                     'joined_at' => $u->pivot->joined_at ? \Carbon\Carbon::parse($u->pivot->joined_at)->format('Y-m-d') : '-',
                 ]),
-                'created_at' => $tenant->created_at ? $tenant->created_at->format('Y-m-d H:i') : '-',
+                'created_at' => $startDate,
             ],
         ]);
     }
@@ -73,7 +98,7 @@ class AdminTenantController extends Controller
         $tenant->delete();
 
         return redirect()->route('admin.tenants.index')
-            ->with('success', 'تم نقل المكتب إلى سلة المهملات بنجاح.');
+            ->with('success', 'تم حذف المكتب وإلغاء الاشتراك بنجاح.');
     }
 
     public function activateSubscription(string $id)
@@ -82,5 +107,37 @@ class AdminTenantController extends Controller
         $tenant->update(['status' => 'active']);
 
         return back()->with('success', 'تم تفعيل حساب المكتب بنجاح.');
+    }
+
+    public function extendSubscription(Request $request, string $id)
+    {
+        $tenant = Tenant::findOrFail($id);
+        $days = (int) $request->input('days', 30);
+
+        $settings = $tenant->settings ?? [];
+        $currentEnd = !empty($settings['expires_at']) ? \Carbon\Carbon::parse($settings['expires_at']) : now();
+        if ($currentEnd->isPast()) {
+            $currentEnd = now();
+        }
+
+        $newEnd = $currentEnd->addDays($days);
+        $settings['expires_at'] = $newEnd->toDateTimeString();
+
+        $tenant->update([
+            'status' => 'active',
+            'settings' => $settings,
+        ]);
+
+        return back()->with('success', "تم تمديد اشتراك المكتب بنجاح لمدة {$days} يوماً حتى {$newEnd->format('Y-m-d')}.");
+    }
+
+    public function toggleStatus(string $id)
+    {
+        $tenant = Tenant::findOrFail($id);
+        $newStatus = $tenant->status === 'active' ? 'suspended' : 'active';
+        $tenant->update(['status' => $newStatus]);
+
+        $statusMsg = $newStatus === 'active' ? 'تم تفعيل المكتب بنجاح' : 'تم إيقاف/إلغاء اشتراك المكتب بنجاح';
+        return back()->with('success', $statusMsg);
     }
 }

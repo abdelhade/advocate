@@ -101,8 +101,10 @@ Route::middleware(AdminAuthenticated::class)->prefix('admin')->group(function ()
     Route::get('/tenants/{id}/edit', [AdminTenantController::class, 'edit'])->name('admin.tenants.edit');
     Route::delete('/tenants/{id}', [AdminTenantController::class, 'destroy'])->name('admin.tenants.destroy');
 
-    Route::post('/tenants/{id}/extend-trial', [AdminTenantController::class, 'extendTrial'])->name('admin.tenants.extend_trial');
+    Route::post('/tenants/{id}/extend-trial', [AdminTenantController::class, 'extendSubscription'])->name('admin.tenants.extend_trial');
+    Route::post('/tenants/{id}/extend', [AdminTenantController::class, 'extendSubscription'])->name('admin.tenants.extend');
     Route::post('/tenants/{id}/activate', [AdminTenantController::class, 'activateSubscription'])->name('admin.tenants.activate');
+    Route::post('/tenants/{id}/toggle-status', [AdminTenantController::class, 'toggleStatus'])->name('admin.tenants.toggle_status');
 
     // Admins
     Route::get('/admins', [AdminAdminController::class, 'index'])->name('admin.admins.index');
