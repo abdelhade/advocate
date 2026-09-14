@@ -14,9 +14,11 @@ const toggleTheme = () => {
     isDarkMode.value = !isDarkMode.value;
     if (isDarkMode.value) {
         document.documentElement.classList.add('dark');
+        document.body.classList.add('dark');
         localStorage.setItem('theme', 'dark');
     } else {
         document.documentElement.classList.remove('dark');
+        document.body.classList.remove('dark');
         localStorage.setItem('theme', 'light');
     }
 };
@@ -25,6 +27,7 @@ onMounted(() => {
     isDarkMode.value = localStorage.getItem('theme') === 'dark';
     if (isDarkMode.value) {
         document.documentElement.classList.add('dark');
+        document.body.classList.add('dark');
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -183,7 +186,7 @@ const navigation = [
                 </div>
             </header>
 
-            <!-- Subscription Status Banner -->
+            <!-- Trial Banner -->
             <div v-if="activeTenant?.is_trial" class="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 px-4 py-2.5 text-xs sm:text-sm font-bold flex items-center shadow-sm border-b border-amber-600/20">
                 <div class="flex items-center gap-2 max-w-7xl mx-auto w-full justify-between">
                     <span class="flex items-center gap-2">
@@ -195,15 +198,15 @@ const navigation = [
                 </div>
             </div>
 
-            <!-- Active / Extended Subscription Banner -->
-            <div v-else-if="activeTenant?.expires_at" class="bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-800 text-white px-4 py-2 text-xs sm:text-sm font-bold flex items-center shadow-sm">
+            <!-- Expiring Soon Warning Banner (Only shown when <= 7 days left) -->
+            <div v-else-if="activeTenant?.days_left !== undefined && activeTenant?.days_left <= 7" class="bg-gradient-to-r from-rose-700 via-red-600 to-rose-700 text-white px-4 py-2.5 text-xs sm:text-sm font-bold flex items-center shadow-md">
                 <div class="flex items-center gap-2 max-w-7xl mx-auto w-full justify-between">
                     <span class="flex items-center gap-2">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        <span>اشتراك المكتب نشط ومفعل</span>
-                        <span class="bg-white/20 text-white px-2.5 py-0.5 rounded-full text-xs font-mono font-bold">صالح حتى {{ activeTenant.expires_at }}</span>
+                        <span class="p-1 bg-white/20 rounded-lg">⚠️</span>
+                        <span>تنبيه: اشتراك المكتب على وشك الانتهاء</span>
+                        <span class="bg-white text-rose-800 px-2.5 py-0.5 rounded-full text-xs font-black">متبقي {{ activeTenant.days_left }} أيام</span>
                     </span>
-                    <span class="text-xs font-bold text-emerald-100 opacity-90 hidden sm:inline">مكتبك يعمل بجميع الصلاحيات والمزايا</span>
+                    <span class="text-xs font-bold opacity-90 hidden sm:inline">يرجى التواصل مع الإدارة لتجديد الاشتراك قبل الانتهاء (تاريخ الانتهاء: {{ activeTenant.expires_at }})</span>
                 </div>
             </div>
 

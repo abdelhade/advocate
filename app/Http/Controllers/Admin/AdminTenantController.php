@@ -63,12 +63,39 @@ class AdminTenantController extends Controller
         $startDate = $tenant->created_at ? $tenant->created_at->format('Y-m-d') : '-';
         
         if (!empty($settings['expires_at'])) {
-            $endDate = \Carbon\Carbon::parse($settings['expires_at'])->format('Y-m-d');
+            $expiresAtCarbon = \Carbon\Carbon::parse($settings['expires_at']);
+            $endDate = $expiresAtCarbon->format('Y-m-d');
         } elseif ($tenant->status === 'active') {
-            $endDate = $tenant->created_at ? $tenant->created_at->addYear()->format('Y-m-d') : '-';
+            $expiresAtCarbon = $tenant->created_at ? $tenant->created_at->addYear() : now()->addYear();
+            $endDate = $expiresAtCarbon->format('Y-m-d');
         } else {
-            $endDate = $tenant->created_at ? $tenant->created_at->addDays(15)->format('Y-m-d') : '-';
+            $expiresAtCarbon = $tenant->created_at ? $tenant->created_at->addDays(15) : now()->addDays(15);
+            $endDate = $expiresAtCarbon->format('Y-m-d');
         }
+
+        $daysLeft = (int) ceil(now()->diffInFloat($expiresAtCarbon, false));
+        if ($daysLeft < 0) {
+            $daysLeft = 0;
+        }
+
+        $owner = $tenant->users->firstWhere('pivot.is_owner', true);
+
+        // Subdomain URL calculation
+        $host = request()->getHost();
+        $scheme = request()->getScheme();
+        if (str_contains($host, 'jalsateg.com')) {
+            $subdomainUrl = "{$scheme}://{$tenant->slug}.jalsateg.com";
+        } else {
+            $port = request()->getPort();
+            $portStr = ($port && $port != 80 && $port != 443) ? ":{$port}" : "";
+            $subdomainUrl = "{$scheme}://{$tenant->slug}.localhost{$portStr}";
+        }
+
+        // Stats
+        $clientsCount = $tenant->clients()->count();
+        $casesCount = $tenant->cases()->count();
+        $documentsCount = $tenant->documents()->count();
+        $invoicesCount = $tenant->invoices()->count();
 
         return Inertia::render('Admin/Tenants/Show', [
             'tenant' => [
@@ -76,14 +103,27 @@ class AdminTenantController extends Controller
                 'name' => $tenant->name,
                 'slug' => $tenant->slug,
                 'email' => $tenant->email,
-                'phone' => $tenant->phone,
+                'phone' => $tenant->phone ?? '-',
                 'status' => $tenant->status,
+                'owner_name' => $owner?->name ?? 'غير محدد',
+                'owner_email' => $owner?->email ?? '-',
+                'owner_phone' => $owner?->phone ?? '-',
                 'start_date' => $startDate,
                 'end_date' => $endDate,
+                'days_left' => $daysLeft,
+                'subdomain_url' => $subdomainUrl,
+                'stats' => [
+                    'clients_count' => $clientsCount,
+                    'cases_count' => $casesCount,
+                    'documents_count' => $documentsCount,
+                    'invoices_count' => $invoicesCount,
+                    'users_count' => $tenant->users->count(),
+                ],
                 'users' => $tenant->users->map(fn ($u) => [
                     'id' => $u->id,
                     'name' => $u->name,
                     'email' => $u->email,
+                    'phone' => $u->phone ?? '-',
                     'is_owner' => (bool) $u->pivot->is_owner,
                     'joined_at' => $u->pivot->joined_at ? \Carbon\Carbon::parse($u->pivot->joined_at)->format('Y-m-d') : '-',
                 ]),

@@ -12,9 +12,11 @@ const toggleTheme = () => {
     isDarkMode.value = !isDarkMode.value;
     if (isDarkMode.value) {
         document.documentElement.classList.add('dark');
+        document.body.classList.add('dark');
         localStorage.setItem('theme', 'dark');
     } else {
         document.documentElement.classList.remove('dark');
+        document.body.classList.remove('dark');
         localStorage.setItem('theme', 'light');
     }
 };
@@ -23,6 +25,7 @@ onMounted(() => {
     isDarkMode.value = localStorage.getItem('theme') === 'dark';
     if (isDarkMode.value) {
         document.documentElement.classList.add('dark');
+        document.body.classList.add('dark');
     }
 });
 
