@@ -15,34 +15,10 @@ defineProps({
 
     <TenantLayout>
         <template #title>
-            <span>📊 لوحة القيادة التفاعلية</span>
-        </template>
-        <template #actions>
-            <div class="flex flex-wrap items-center gap-2">
-                <Link
-                    :href="route('cases.create')"
-                    class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-200 transition-all flex items-center gap-1.5"
-                >
-                    ⚖️ قضية جديدة
-                </Link>
-                <Link
-                    :href="route('clients.create')"
-                    class="px-4 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
-                >
-                    👤 موكل جديد
-                </Link>
-                <Link
-                    :href="route('tenant.users.index')"
-                    class="px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded-xl text-xs font-bold shadow-md shadow-red-200 transition-all flex items-center gap-1.5"
-                >
-                    👨‍⚖️ فريق العمل للمكتب
-                </Link>
-                <Link
-                    :href="route('invoices.create')"
-                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-200 transition-all flex items-center gap-1.5"
-                >
-                    📜 فاتورة أتعاب
-                </Link>
+            <div class="flex items-center gap-2 text-sm text-stone-500">
+                <Link :href="route('dashboard')" class="hover:text-blue-700 font-medium">الرئيسية</Link>
+                <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                <span class="text-stone-800 font-bold">لوحة التحكم</span>
             </div>
         </template>
 
