@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class RegisterController extends Controller
@@ -21,7 +24,7 @@ class RegisterController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'office_name' => 'required|string|max:255',
-            'subdomain' => 'required|string|alpha_dash|max:50|unique:tenants,id',
+            'subdomain' => 'required|string|alpha_dash|max:50|unique:tenants,slug',
             'email' => 'required|string|email|max:255',
             'phone' => 'required|string|max:30',
             'password' => 'required|string|min:8|confirmed',
@@ -32,51 +35,49 @@ class RegisterController extends Controller
             'password.min' => 'كلمة المرور يجب أن لا تقل عن 8 رموز.',
         ]);
 
-        $subdomain = strtolower($request->subdomain);
-        $port = request()->getPort();
-        $scheme = request()->getScheme();
-        
-        $host = request()->getHost();
-        if ($host === '127.0.0.1' || $host === 'localhost') {
-            $baseDomain = 'localhost';
-        } else {
-            $baseDomain = implode('.', array_slice(explode('.', $host), -2));
-        }
+        return DB::transaction(function () use ($request) {
+            // 1. Find or create central user
+            $user = User::where('email', $request->email)->first();
+            if (!$user) {
+                $user = User::create([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'password' => Hash::make($request->password),
+                    'phone' => $request->phone,
+                    'status' => 'active',
+                ]);
+            }
 
-        $fullDomain = $subdomain . '.' . $baseDomain;
-
-        // 1. Create Tenant (triggers DB creation & migrations)
-        $tenant = Tenant::create([
-            'id' => $subdomain,
-            'name' => $request->office_name,
-            'owner_name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'trial_ends_at' => now()->addDays(15)->toDateTimeString(),
-            'status' => 'trial',
-        ]);
-
-        // 2. Create Domain mapping
-        $tenant->domains()->create([
-            'domain' => $fullDomain,
-        ]);
-
-        // 3. Create default Lawyer user inside Tenant context
-        $tenant->run(function () use ($request) {
-            User::create([
-                'name' => $request->name,
+            // 2. Create Tenant
+            $tenant = Tenant::create([
+                'id' => (string) Str::uuid(),
+                'name' => $request->office_name,
+                'slug' => strtolower($request->subdomain),
                 'email' => $request->email,
-                'password' => Hash::make($request->password),
+                'phone' => $request->phone,
+                'status' => 'active',
+                'settings' => [
+                    'retention_days' => 365,
+                    'currency' => 'EGP',
+                ],
+            ]);
+
+            // 3. Attach User as Owner of this Tenant
+            $tenant->users()->attach($user->id, [
+                'is_owner' => true,
+                'status' => 'active',
+                'joined_at' => now(),
+            ]);
+
+            // 4. Authenticate & Set Active Tenant Context
+            Auth::login($user);
+            session(['active_tenant_id' => $tenant->id]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم إنشاء مكتبك بنجاح! جاري توجيهك إلى لوحة التحكم...',
+                'redirect_url' => route('dashboard'),
             ]);
         });
-
-        // 4. Construct redirect URL to tenant login
-        $redirectUrl = $scheme . '://' . $fullDomain . ($port && !in_array($port, [80, 443]) ? ':' . $port : '') . '/login';
-
-        return response()->json([
-            'success' => true,
-            'message' => 'تم إنشاء مكتبك بنجاح! جاري توجيهك إلى لوحة التحكم...',
-            'redirect_url' => $redirectUrl,
-        ]);
     }
 }

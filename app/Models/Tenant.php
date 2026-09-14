@@ -2,12 +2,70 @@
 
 namespace App\Models;
 
-use Stancl\Tenancy\Database\Models\Tenant as BaseTenant;
-use Stancl\Tenancy\Contracts\TenantWithDatabase;
-use Stancl\Tenancy\Database\Concerns\HasDatabase;
-use Stancl\Tenancy\Database\Concerns\HasDomains;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Tenant extends BaseTenant implements TenantWithDatabase
+class Tenant extends Model
 {
-    use HasDatabase, HasDomains;
+    use HasFactory, SoftDeletes, HasUuids;
+
+    protected $fillable = [
+        'id',
+        'name',
+        'slug',
+        'email',
+        'phone',
+        'status',
+        'settings',
+    ];
+
+    protected $casts = [
+        'settings' => 'array',
+    ];
+
+    /**
+     * Users that belong to this tenant.
+     */
+    public function users(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'tenant_user')
+            ->withPivot(['is_owner', 'status', 'joined_at'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Clients belonging to this tenant.
+     */
+    public function clients(): HasMany
+    {
+        return $this->hasMany(Client::class, 'tenant_id');
+    }
+
+    /**
+     * Legal cases belonging to this tenant.
+     */
+    public function cases(): HasMany
+    {
+        return $this->hasMany(LegalCase::class, 'tenant_id');
+    }
+
+    /**
+     * Documents belonging to this tenant.
+     */
+    public function documents(): HasMany
+    {
+        return $this->hasMany(Document::class, 'tenant_id');
+    }
+
+    /**
+     * Invoices belonging to this tenant.
+     */
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoice::class, 'tenant_id');
+    }
 }

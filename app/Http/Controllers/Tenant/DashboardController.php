@@ -19,7 +19,7 @@ class DashboardController extends Controller
             'upcoming_sessions' => CourtSession::where('session_date', '>=', Carbon::today())->count(),
         ];
 
-        $upcomingSessions = CourtSession::with('legalCase')
+        $upcomingSessions = CourtSession::with('case')
             ->where('session_date', '>=', Carbon::today())
             ->orderBy('session_date', 'asc')
             ->take(5)
@@ -27,10 +27,10 @@ class DashboardController extends Controller
             ->map(function ($session) {
                 return [
                     'id' => $session->id,
-                    'case_title' => $session->legalCase->title,
-                    'case_number' => $session->legalCase->case_number,
-                    'session_date' => $session->session_date->format('Y-m-d'),
-                    'location' => $session->location,
+                    'case_title' => $session->case?->title,
+                    'case_number' => $session->case?->case_number,
+                    'session_date' => $session->session_date->format('Y-m-d H:i'),
+                    'court_name' => $session->case?->court_name,
                 ];
             });
 
@@ -43,7 +43,7 @@ class DashboardController extends Controller
                     'id' => $case->id,
                     'title' => $case->title,
                     'case_number' => $case->case_number,
-                    'client_name' => $case->client->name,
+                    'client_name' => $case->client?->name,
                     'status' => $case->status,
                     'created_at' => $case->created_at->format('Y-m-d'),
                 ];

@@ -6,34 +6,35 @@ use App\Models\Traits\BelongsToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CourtSession extends Model
+class Expense extends Model
 {
-    use HasFactory, SoftDeletes, BelongsToTenant;
-
-    protected $table = 'court_sessions';
+    use HasFactory, BelongsToTenant;
 
     protected $fillable = [
         'tenant_id',
         'case_id',
-        'session_date',
-        'status',
-        'requirements',
-        'results',
-        'next_session_date',
+        'category',
+        'amount',
+        'expense_date',
+        'paid_by_id',
     ];
 
     protected function casts(): array
     {
         return [
-            'session_date' => 'datetime',
-            'next_session_date' => 'datetime',
+            'expense_date' => 'date',
+            'amount' => 'decimal:2',
         ];
     }
 
     public function case(): BelongsTo
     {
         return $this->belongsTo(LegalCase::class, 'case_id');
+    }
+
+    public function paidBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'paid_by_id');
     }
 }

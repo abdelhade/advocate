@@ -6,29 +6,33 @@ use App\Http\Controllers\Controller;
 use App\Models\CourtSession;
 use App\Models\LegalCase;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class SessionController extends Controller
 {
     public function store(Request $request, LegalCase $case)
     {
+        Gate::authorize('update', $case);
+
         $validated = $request->validate([
             'session_date' => ['required', 'date'],
-            'session_time' => ['nullable', 'date_format:H:i'],
-            'location' => ['nullable', 'string', 'max:255'],
-            'decision' => ['nullable', 'string'],
+            'status' => ['required', 'in:scheduled,completed,postponed,cancelled'],
+            'requirements' => ['nullable', 'string'],
+            'results' => ['nullable', 'string'],
             'next_session_date' => ['nullable', 'date'],
-            'notes' => ['nullable', 'string'],
         ]);
 
-        $case->courtSessions()->create($validated);
+        $case->sessions()->create($validated);
 
         return back()->with('success', 'تم إضافة الجلسة بنجاح.');
     }
 
     public function destroy(LegalCase $case, CourtSession $session)
     {
+        Gate::authorize('update', $case);
+
         $session->delete();
 
-        return back()->with('success', 'تم حذف الجلسة بنجاح.');
+        return back()->with('success', 'تم نقل الجلسة إلى سلة المهملات بنجاح.');
     }
 }

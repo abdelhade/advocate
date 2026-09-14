@@ -8,32 +8,43 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CourtSession extends Model
+class Task extends Model
 {
     use HasFactory, SoftDeletes, BelongsToTenant;
-
-    protected $table = 'court_sessions';
 
     protected $fillable = [
         'tenant_id',
         'case_id',
-        'session_date',
+        'title',
+        'description',
+        'priority',
         'status',
-        'requirements',
-        'results',
-        'next_session_date',
+        'due_date',
+        'creator_id',
+        'assignee_id',
+        'completed_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'session_date' => 'datetime',
-            'next_session_date' => 'datetime',
+            'due_date' => 'datetime',
+            'completed_at' => 'datetime',
         ];
     }
 
     public function case(): BelongsTo
     {
         return $this->belongsTo(LegalCase::class, 'case_id');
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'creator_id');
+    }
+
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'assignee_id');
     }
 }
