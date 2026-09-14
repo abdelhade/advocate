@@ -15,43 +15,53 @@ class EmailVerificationTest extends TestCase
 
     public function test_email_verification_screen_can_be_rendered(): void
     {
-        $user = User::factory()->unverified()->create();
+        [$user, $tenant] = $this->createTenantUser(['email_verified_at' => null]);
 
-        $response = $this->actingAs($user)->get('/verify-email');
+        $response = $this->actingAs($user)
+            ->onTenant($tenant)
+            ->get($this->tenantUrl($tenant, '/verify-email'));
 
         $response->assertStatus(200);
     }
 
     public function test_email_can_be_verified(): void
     {
-        $user = User::factory()->unverified()->create();
+        [$user, $tenant] = $this->createTenantUser(['email_verified_at' => null]);
 
         Event::fake();
+
+        URL::defaults(['tenant_slug' => $tenant->slug]);
 
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
-            ['id' => $user->id, 'hash' => sha1($user->email)]
+            ['id' => $user->id, 'hash' => sha1($user->email), 'tenant_slug' => $tenant->slug]
         );
 
-        $response = $this->actingAs($user)->get($verificationUrl);
+        $response = $this->actingAs($user)
+            ->onTenant($tenant)
+            ->get($verificationUrl);
 
         Event::assertDispatched(Verified::class);
         $this->assertTrue($user->fresh()->hasVerifiedEmail());
-        $response->assertRedirect(route('dashboard', absolute: false).'?verified=1');
+        $response->assertRedirect('/dashboard?verified=1');
     }
 
     public function test_email_is_not_verified_with_invalid_hash(): void
     {
-        $user = User::factory()->unverified()->create();
+        [$user, $tenant] = $this->createTenantUser(['email_verified_at' => null]);
+
+        URL::defaults(['tenant_slug' => $tenant->slug]);
 
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
-            ['id' => $user->id, 'hash' => sha1('wrong-email')]
+            ['id' => $user->id, 'hash' => sha1('wrong-email'), 'tenant_slug' => $tenant->slug]
         );
 
-        $this->actingAs($user)->get($verificationUrl);
+        $this->actingAs($user)
+            ->onTenant($tenant)
+            ->get($verificationUrl);
 
         $this->assertFalse($user->fresh()->hasVerifiedEmail());
     }

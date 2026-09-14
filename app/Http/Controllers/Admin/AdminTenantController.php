@@ -2,38 +2,52 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Admin\Concerns\ConfirmsAdminPassword;
 use App\Http\Controllers\Controller;
+use App\Models\SubscriptionPlan;
 use App\Models\Tenant;
+use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class AdminTenantController extends Controller
 {
+    use ConfirmsAdminPassword;
+
+    public function __construct(private SubscriptionService $subscriptions)
+    {
+    }
+
     public function index(Request $request)
     {
-        $query = Tenant::with('users')->latest();
+        $query = Tenant::query()
+            ->with(['users', 'subscriptions' => fn ($q) => $q->with('plan')->latest('starts_at')])
+            ->withCount('users')
+            ->latest();
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('slug', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('slug', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
+        if ($planSlug = $request->input('plan')) {
+            $query->whereHas('subscriptions', function ($q) use ($planSlug) {
+                $q->whereIn('status', ['active', 'trialing', 'past_due'])
+                    ->whereHas('plan', fn ($p) => $p->where('slug', $planSlug));
+            });
+        }
+
+        $plans = SubscriptionPlan::where('is_active', true)->orderBy('sort_order')->get([
+            'id', 'name', 'slug', 'tagline', 'price_monthly', 'price_yearly',
+        ]);
+
         $tenants = $query->paginate(20)->through(function ($tenant) {
             $owner = $tenant->users->firstWhere('pivot.is_owner', true);
-            $settings = $tenant->settings ?? [];
-
-            $startDate = $tenant->created_at ? $tenant->created_at->format('Y-m-d') : '-';
-            
-            if (!empty($settings['expires_at'])) {
-                $endDate = \Carbon\Carbon::parse($settings['expires_at'])->format('Y-m-d');
-            } elseif ($tenant->status === 'active') {
-                $endDate = $tenant->created_at ? $tenant->created_at->addYear()->format('Y-m-d') : '-';
-            } else {
-                $endDate = $tenant->created_at ? $tenant->created_at->addDays(15)->format('Y-m-d') : '-';
-            }
+            $subscription = $tenant->subscriptions->first();
+            $summary = $this->subscriptions->summarize($subscription, $tenant);
 
             return [
                 'id' => $tenant->id,
@@ -43,59 +57,50 @@ class AdminTenantController extends Controller
                 'email' => $tenant->email,
                 'phone' => $tenant->phone ?? '-',
                 'status' => $tenant->status,
-                'users_count' => $tenant->users->count(),
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-                'created_at' => $startDate,
+                'users_count' => $tenant->users_count,
+                'start_date' => $summary['starts_at'] ?? ($tenant->created_at?->format('Y-m-d') ?? '-'),
+                'end_date' => $summary['ends_at'] ?? '-',
+                'plan_name' => $summary['plan_name'],
+                'plan_slug' => $summary['plan_slug'],
+                'plan_id' => $summary['plan_id'],
+                'price_monthly' => $summary['price_monthly'],
+                'price_yearly' => $summary['price_yearly'],
+                'billing_period' => $summary['billing_period'],
+                'subscription_status' => $summary['subscription_status'],
+                'is_trial' => $summary['is_trial'],
+                'created_at' => $tenant->created_at?->format('Y-m-d') ?? '-',
             ];
         });
 
         return Inertia::render('Admin/Tenants/Index', [
             'tenants' => $tenants,
-            'filters' => $request->only('search'),
+            'plans' => $plans,
+            'filters' => $request->only('search', 'plan'),
         ]);
     }
 
     public function show(string $id)
     {
-        $tenant = Tenant::with('users')->findOrFail($id);
-        $settings = $tenant->settings ?? [];
-        $startDate = $tenant->created_at ? $tenant->created_at->format('Y-m-d') : '-';
-        
-        if (!empty($settings['expires_at'])) {
-            $expiresAtCarbon = \Carbon\Carbon::parse($settings['expires_at']);
-            $endDate = $expiresAtCarbon->format('Y-m-d');
-        } elseif ($tenant->status === 'active') {
-            $expiresAtCarbon = $tenant->created_at ? $tenant->created_at->addYear() : now()->addYear();
-            $endDate = $expiresAtCarbon->format('Y-m-d');
-        } else {
-            $expiresAtCarbon = $tenant->created_at ? $tenant->created_at->addDays(15) : now()->addDays(15);
-            $endDate = $expiresAtCarbon->format('Y-m-d');
-        }
+        $tenant = Tenant::with(['users', 'subscriptions.plan'])->findOrFail($id);
+        $subscription = $tenant->subscriptions
+            ->whereIn('status', ['active', 'trialing', 'past_due'])
+            ->sortByDesc('starts_at')
+            ->first()
+            ?? $tenant->subscriptions->sortByDesc('starts_at')->first();
 
-        $daysLeft = (int) ceil(now()->diffInFloat($expiresAtCarbon, false));
-        if ($daysLeft < 0) {
-            $daysLeft = 0;
-        }
+        $summary = $this->subscriptions->summarize($subscription, $tenant);
+
+        $expiresAtCarbon = $summary['ends_at']
+            ? \Carbon\Carbon::parse($summary['ends_at'])->endOfDay()
+            : now();
+        $daysLeft = max(0, (int) ceil(now()->diffInSeconds($expiresAtCarbon, false) / 86400));
 
         $owner = $tenant->users->firstWhere('pivot.is_owner', true);
+        $subdomainUrl = \App\Support\TenantUrl::for($tenant, '/', request());
 
-        // Subdomain URL calculation
-        $host = request()->getHost();
-        $scheme = request()->getScheme();
-        if (str_contains($host, 'jalsateg.com')) {
-            $subdomainUrl = "{$scheme}://{$tenant->slug}.jalsateg.com";
-        } else {
-            $port = request()->getPort();
-            $portStr = ($port && $port != 80 && $port != 443) ? ":{$port}" : "";
-            $subdomainUrl = "{$scheme}://{$tenant->slug}.localhost{$portStr}";
-        }
-
-        // Stats
-        $clientsCount = $tenant->clients()->count();
-        $casesCount = $tenant->cases()->count();
-        $documentsCount = $tenant->documents()->count();
-        $invoicesCount = $tenant->invoices()->count();
+        $plans = SubscriptionPlan::where('is_active', true)->orderBy('sort_order')->get([
+            'id', 'name', 'slug', 'tagline', 'price_monthly', 'price_yearly',
+        ]);
 
         return Inertia::render('Admin/Tenants/Show', [
             'tenant' => [
@@ -108,15 +113,16 @@ class AdminTenantController extends Controller
                 'owner_name' => $owner?->name ?? 'غير محدد',
                 'owner_email' => $owner?->email ?? '-',
                 'owner_phone' => $owner?->phone ?? '-',
-                'start_date' => $startDate,
-                'end_date' => $endDate,
+                'start_date' => $summary['starts_at'],
+                'end_date' => $summary['ends_at'],
                 'days_left' => $daysLeft,
                 'subdomain_url' => $subdomainUrl,
+                'subscription' => $summary,
                 'stats' => [
-                    'clients_count' => $clientsCount,
-                    'cases_count' => $casesCount,
-                    'documents_count' => $documentsCount,
-                    'invoices_count' => $invoicesCount,
+                    'clients_count' => $tenant->clients()->count(),
+                    'cases_count' => $tenant->cases()->count(),
+                    'documents_count' => $tenant->documents()->count(),
+                    'invoices_count' => $tenant->invoices()->count(),
                     'users_count' => $tenant->users->count(),
                 ],
                 'users' => $tenant->users->map(fn ($u) => [
@@ -127,13 +133,40 @@ class AdminTenantController extends Controller
                     'is_owner' => (bool) $u->pivot->is_owner,
                     'joined_at' => $u->pivot->joined_at ? \Carbon\Carbon::parse($u->pivot->joined_at)->format('Y-m-d') : '-',
                 ]),
-                'created_at' => $startDate,
+                'created_at' => $tenant->created_at?->format('Y-m-d'),
             ],
+            'plans' => $plans,
         ]);
     }
 
-    public function destroy(string $id)
+    public function updatePlan(Request $request, string $id)
     {
+        $this->confirmAdminPassword($request);
+
+        $validated = $request->validate([
+            'plan_id' => 'required|exists:subscription_plans,id',
+            'billing_period' => 'required|in:monthly,yearly',
+        ], [
+            'plan_id.required' => 'اختر خطة الاشتراك.',
+            'billing_period.in' => 'فترة الفوترة غير صحيحة.',
+        ]);
+
+        $tenant = Tenant::findOrFail($id);
+        $plan = SubscriptionPlan::findOrFail($validated['plan_id']);
+
+        $this->subscriptions->assignPlan(
+            $tenant,
+            $plan,
+            $validated['billing_period']
+        );
+
+        return back()->with('success', "تم تحديث اشتراك المكتب إلى خطة «{$plan->name}».");
+    }
+
+    public function destroy(Request $request, string $id)
+    {
+        $this->confirmAdminPassword($request);
+
         $tenant = Tenant::findOrFail($id);
         $tenant->delete();
 
@@ -141,8 +174,10 @@ class AdminTenantController extends Controller
             ->with('success', 'تم حذف المكتب وإلغاء الاشتراك بنجاح.');
     }
 
-    public function activateSubscription(string $id)
+    public function activateSubscription(Request $request, string $id)
     {
+        $this->confirmAdminPassword($request);
+
         $tenant = Tenant::findOrFail($id);
         $tenant->update(['status' => 'active']);
 
@@ -151,33 +186,54 @@ class AdminTenantController extends Controller
 
     public function extendSubscription(Request $request, string $id)
     {
+        $this->confirmAdminPassword($request);
+
         $tenant = Tenant::findOrFail($id);
         $days = (int) $request->input('days', 30);
 
-        $settings = $tenant->settings ?? [];
-        $currentEnd = !empty($settings['expires_at']) ? \Carbon\Carbon::parse($settings['expires_at']) : now();
-        if ($currentEnd->isPast()) {
-            $currentEnd = now();
+        $subscription = $tenant->currentSubscription();
+        if ($subscription) {
+            $currentEnd = $subscription->ends_at && $subscription->ends_at->isFuture()
+                ? $subscription->ends_at->copy()
+                : now();
+            $newEnd = $currentEnd->addDays($days);
+            $subscription->update([
+                'ends_at' => $newEnd,
+                'status' => $subscription->plan?->isFree() ? 'trialing' : 'active',
+            ]);
+        } else {
+            $newEnd = now()->addDays($days);
         }
 
-        $newEnd = $currentEnd->addDays($days);
-        $settings['expires_at'] = $newEnd->toDateTimeString();
+        $settings = $tenant->settings ?? [];
+        $settings['expires_at'] = ($newEnd ?? now()->addDays($days))->toDateTimeString();
 
         $tenant->update([
             'status' => 'active',
             'settings' => $settings,
         ]);
 
-        return back()->with('success', "تم تمديد اشتراك المكتب بنجاح لمدة {$days} يوماً حتى {$newEnd->format('Y-m-d')}.");
+        $endLabel = ($newEnd ?? now()->addDays($days))->format('Y-m-d');
+
+        return back()->with('success', "تم تمديد اشتراك المكتب بنجاح لمدة {$days} يوماً حتى {$endLabel}.");
     }
 
-    public function toggleStatus(string $id)
+    public function toggleStatus(Request $request, string $id)
     {
+        $this->confirmAdminPassword($request);
+
         $tenant = Tenant::findOrFail($id);
         $newStatus = $tenant->status === 'active' ? 'suspended' : 'active';
         $tenant->update(['status' => $newStatus]);
 
+        if ($newStatus === 'suspended') {
+            $tenant->subscriptions()
+                ->whereIn('status', ['active', 'trialing', 'past_due'])
+                ->update(['status' => 'cancelled']);
+        }
+
         $statusMsg = $newStatus === 'active' ? 'تم تفعيل المكتب بنجاح' : 'تم إيقاف/إلغاء اشتراك المكتب بنجاح';
+
         return back()->with('success', $statusMsg);
     }
 }

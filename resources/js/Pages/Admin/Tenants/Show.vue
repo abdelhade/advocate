@@ -1,43 +1,111 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import AdminPasswordConfirm from '@/Components/AdminPasswordConfirm.vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
 
 const props = defineProps({
     tenant: Object,
+    plans: { type: Array, default: () => [] },
 });
 
+const page = usePage();
 const showExtendModal = ref(false);
 const extendDays = ref(30);
 const confirmDeleteModal = ref(false);
 const copiedSubdomain = ref(false);
+const showPlanModal = ref(false);
+const selectedPlanId = ref(props.tenant?.subscription?.plan_id ?? null);
+const billingPeriod = ref(props.tenant?.subscription?.billing_period === 'monthly' ? 'monthly' : 'yearly');
+
+const showPasswordModal = ref(false);
+const passwordProcessing = ref(false);
+const passwordError = ref('');
+const pendingAction = ref(null);
+const passwordErrorFromPage = computed(() => page.props.errors?.admin_password?.[0] || passwordError.value);
 
 const copySubdomain = () => {
     if (props.tenant?.subdomain_url) {
         navigator.clipboard.writeText(props.tenant.subdomain_url);
         copiedSubdomain.value = true;
-        setTimeout(() => {
-            copiedSubdomain.value = false;
-        }, 2000);
+        setTimeout(() => { copiedSubdomain.value = false; }, 2000);
+    }
+};
+
+const requestPassword = (action) => {
+    pendingAction.value = action;
+    passwordError.value = '';
+    showPasswordModal.value = true;
+};
+
+const runWithPassword = (adminPassword) => {
+    if (!pendingAction.value) return;
+    passwordProcessing.value = true;
+    passwordError.value = '';
+
+    const { method, url, data } = pendingAction.value;
+    const payload = { ...(data || {}), admin_password: adminPassword };
+    const options = {
+        preserveScroll: true,
+        onSuccess: () => {
+            showPasswordModal.value = false;
+            pendingAction.value = null;
+            showExtendModal.value = false;
+            confirmDeleteModal.value = false;
+            showPlanModal.value = false;
+        },
+        onError: (errors) => {
+            passwordError.value = errors.admin_password || 'كلمة مرور المدير غير صحيحة.';
+        },
+        onFinish: () => { passwordProcessing.value = false; },
+    };
+
+    if (method === 'delete') {
+        router.post(url, { ...payload, _method: 'delete' }, options);
+    } else {
+        router.post(url, payload, options);
     }
 };
 
 const handleExtendSubscription = () => {
-    router.post(route('admin.tenants.extend', props.tenant.id), {
-        days: extendDays.value,
-    }, {
-        onSuccess: () => {
-            showExtendModal.value = false;
-        }
+    requestPassword({
+        method: 'post',
+        url: route('admin.tenants.extend', props.tenant.id),
+        data: { days: extendDays.value },
     });
 };
 
 const toggleStatus = () => {
-    router.post(route('admin.tenants.toggle_status', props.tenant.id));
+    requestPassword({
+        method: 'post',
+        url: route('admin.tenants.toggle_status', props.tenant.id),
+        data: {},
+    });
 };
 
 const deleteTenant = () => {
-    router.delete(route('admin.tenants.destroy', props.tenant.id));
+    requestPassword({
+        method: 'delete',
+        url: route('admin.tenants.destroy', props.tenant.id),
+        data: {},
+    });
+};
+
+const openPlanModal = () => {
+    selectedPlanId.value = props.tenant?.subscription?.plan_id ?? null;
+    billingPeriod.value = props.tenant?.subscription?.billing_period === 'monthly' ? 'monthly' : 'yearly';
+    showPlanModal.value = true;
+};
+
+const updatePlan = () => {
+    requestPassword({
+        method: 'post',
+        url: route('admin.tenants.update_plan', props.tenant.id),
+        data: {
+            plan_id: selectedPlanId.value,
+            billing_period: billingPeriod.value,
+        },
+    });
 };
 </script>
 
@@ -177,6 +245,29 @@ const deleteTenant = () => {
                     <div>
                         <p class="text-xs font-medium text-stone-400 mb-1">معرّف المكتب الفرعي (Slug)</p>
                         <p class="text-base font-bold text-stone-800 font-mono" dir="ltr">{{ tenant.slug }}</p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-medium text-stone-400 mb-1">نوع الاشتراك (حسب التسعير)</p>
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-base font-black text-stone-900">{{ tenant.subscription?.plan_name || '—' }}</span>
+                            <button @click="openPlanModal" class="text-[11px] font-bold text-red-700 hover:underline">تغيير الخطة</button>
+                        </div>
+                        <p class="text-[11px] text-stone-500 font-semibold mt-1">
+                            <span v-if="Number(tenant.subscription?.price_yearly || 0) === 0">مجاني</span>
+                            <span v-else>
+                                {{ tenant.subscription?.billing_period === 'monthly'
+                                    ? Number(tenant.subscription.price_monthly).toLocaleString() + ' ج.م / شهر'
+                                    : Number(tenant.subscription.price_yearly).toLocaleString() + ' ج.م / سنة' }}
+                            </span>
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="text-xs font-medium text-stone-400 mb-1">حالة خطة الاشتراك</p>
+                        <p class="text-sm font-bold text-stone-800">
+                            {{ tenant.subscription?.is_trial ? 'فترة تجريبية' : (tenant.subscription?.subscription_status || tenant.status) }}
+                        </p>
                     </div>
 
                     <div>
@@ -416,5 +507,44 @@ const deleteTenant = () => {
                 </div>
             </Transition>
         </Teleport>
+
+        <Teleport to="body">
+            <Transition enter-active-class="transition-all duration-200" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition-all duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <div v-if="showPlanModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" @click.self="showPlanModal = false">
+                    <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl text-right dir-rtl">
+                        <h3 class="text-lg font-bold text-stone-800 mb-4">تغيير خطة الاشتراك</h3>
+                        <div class="space-y-2 mb-4">
+                            <label v-for="plan in plans" :key="plan.id" class="flex items-start gap-3 p-3 rounded-xl border cursor-pointer" :class="Number(selectedPlanId) === Number(plan.id) ? 'border-red-600 bg-red-50/40' : 'border-stone-200'">
+                                <input v-model="selectedPlanId" type="radio" :value="plan.id" class="mt-1" />
+                                <div>
+                                    <p class="text-sm font-black">{{ plan.name }}</p>
+                                    <p class="text-[11px] text-stone-500">{{ plan.tagline }}</p>
+                                    <p class="text-xs font-bold text-red-700 mt-1">
+                                        {{ Number(plan.price_yearly) === 0 ? 'مجاني' : (Number(plan.price_monthly).toLocaleString() + ' ج.م/شهر — ' + Number(plan.price_yearly).toLocaleString() + ' ج.م/سنة') }}
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
+                        <select v-model="billingPeriod" class="w-full mb-4 px-4 py-3 rounded-xl border border-stone-200 text-sm font-bold">
+                            <option value="yearly">سنوي</option>
+                            <option value="monthly">شهري</option>
+                        </select>
+                        <div class="flex gap-3">
+                            <button @click="showPlanModal = false" class="flex-1 py-3 border rounded-xl text-sm font-semibold">إلغاء</button>
+                            <button @click="updatePlan" class="flex-1 py-3 bg-red-700 text-white rounded-xl text-sm font-bold">متابعة (يتطلب كلمة المرور)</button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
+        <AdminPasswordConfirm
+            :show="showPasswordModal"
+            :processing="passwordProcessing"
+            :error="passwordErrorFromPage"
+            description="أي تعديل على هذا المكتب يتطلب كلمة مرور المدير."
+            @close="showPasswordModal = false; pendingAction = null"
+            @confirm="runWithPassword"
+        />
     </AdminLayout>
 </template>

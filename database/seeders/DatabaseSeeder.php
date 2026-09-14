@@ -18,6 +18,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(SubscriptionPlanSeeder::class);
+        $this->call(PermissionSeeder::class);
+
         // 1. Create Central Super Admin
         $admin = User::create([
             'name' => 'مدير النظام الرئيسي',

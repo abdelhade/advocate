@@ -25,17 +25,49 @@ return [
     ]))),
 
     /**
+     * Base domain for tenant subdomains: {slug}.{tenant_base_domain}
+     * Shared single-database tenancy — do not switch DB connections.
+     */
+    'tenant_base_domain' => env(
+        'TENANT_BASE_DOMAIN',
+        preg_replace('/^www\./i', '', parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost')
+    ),
+
+    /**
+     * Domains the office can choose at registration (subdomain base).
+     * Comma-separated in .env, e.g. jalsateg.com,jalsat.sa,jalsat.app
+     * Locally usually just: localhost
+     */
+    'available_domains' => array_values(array_unique(array_filter(array_map(
+        static fn (string $d) => strtolower(trim($d)),
+        explode(',', (string) env(
+            'TENANT_AVAILABLE_DOMAINS',
+            env(
+                'TENANT_BASE_DOMAIN',
+                preg_replace('/^www\./i', '', parse_url(env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost')
+            )
+        ))
+    )))),
+
+    /**
+     * Display labels for optional domains on the registration form.
+     */
+    'domain_labels' => [
+        'localhost' => 'localhost (تطوير)',
+        'jalsateg.com' => 'jalsateg.com (الرئيسي)',
+        'jalsat.sa' => 'jalsat.sa (السعودي)',
+        'jalsat.app' => 'jalsat.app (السريع)',
+    ],
+
+    /**
      * Tenancy bootstrappers are executed when tenancy is initialized.
-     * Their responsibility is making Laravel features tenant-aware.
-     *
-     * To configure their behavior, see the config keys below.
+     * Empty: we use a single shared database with tenant_id scoping.
      */
     'bootstrappers' => [
-        Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper::class,
-        Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class,
-        Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class,
-        Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
-        // Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper::class, // Note: phpredis is needed
+        // Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper::class,
+        // Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class,
+        // Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class,
+        // Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
     ],
 
     /**

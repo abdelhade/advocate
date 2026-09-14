@@ -3,6 +3,8 @@ import { ref, computed } from 'vue'
 import { Head, Link } from '@inertiajs/vue3'
 import axios from 'axios'
 
+const FIXED_DOMAIN = 'jalsateg.com'
+
 const form = ref({
   name: '',
   office_name: '',
@@ -17,44 +19,12 @@ const errors = ref({})
 const loading = ref(false)
 const successMessage = ref('')
 
-const availableDomains = ref([
-  { label: 'jalsateg.com (النطاق الرئيسي)', value: 'jalsateg.com' },
-  { label: 'jalsat.sa (النطاق السعودي)', value: 'jalsat.sa' },
-  { label: 'jalsat.app (النطاق السريع)', value: 'jalsat.app' },
-])
-
-const isDev = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
-const currentHost = isDev ? 'localhost' : window.location.hostname
-const selectedDomain = ref(availableDomains.value.some(d => d.value === currentHost) ? currentHost : 'jalsateg.com')
-
-const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:'
-const portSuffix = (isDev && window.location.port) ? `:${window.location.port}` : ''
-
 const formattedSubdomain = computed(() => {
   if (!form.value.subdomain) return ''
   const clean = form.value.subdomain.toLowerCase().trim().replace(/[^a-z0-9-]/g, '')
-  const domain = isDev ? 'localhost' : selectedDomain.value
-  return `${protocol}//${clean}.${domain}${portSuffix}`
+  if (!clean) return ''
+  return `https://${clean}.${FIXED_DOMAIN}`
 })
-
-const autoSlug = () => {
-  if (!form.value.subdomain && form.value.office_name) {
-    // Convert common office names or fallback to office-slug
-    const name = form.value.office_name.trim().toLowerCase()
-    let slug = name
-      .replace(/[^\u0621-\u064A0-9a-zA-Z\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/مكتب|للمحاماة|والاستشارات|القانونية/g, '')
-      .trim()
-    
-    if (!slug || slug.length < 2) {
-      slug = 'office-' + Math.floor(1000 + Math.random() * 9000)
-    } else {
-      slug = 'office-' + Math.floor(100 + Math.random() * 900)
-    }
-    form.value.subdomain = slug.replace(/[^a-z0-9-]/g, '')
-  }
-}
 
 const submit = async () => {
   errors.value = {}
@@ -62,7 +32,11 @@ const submit = async () => {
   successMessage.value = ''
 
   try {
-    const response = await axios.post('/register', form.value)
+    const response = await axios.post('/register', {
+      ...form.value,
+      domain: FIXED_DOMAIN,
+      subdomain: form.value.subdomain.toLowerCase().trim().replace(/[^a-z0-9-]/g, ''),
+    })
     if (response.data.success) {
       successMessage.value = response.data.message
       setTimeout(() => {
@@ -126,7 +100,7 @@ const submit = async () => {
                 v-model="form.name"
                 type="text"
                 required
-                placeholder="أ. أحمد المنياوي"
+                placeholder="الاسم الثلاثي"
                 class="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 text-sm font-medium transition"
               />
               <p v-if="errors.name" class="mt-1 text-xs font-bold text-rose-600">{{ errors.name[0] }}</p>
@@ -138,84 +112,80 @@ const submit = async () => {
                 v-model="form.office_name"
                 type="text"
                 required
-                @blur="autoSlug"
-                placeholder="مكتب الفهد للمحاماة"
+                placeholder="مكتب {__________} للمحاماة"
                 class="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 text-sm font-medium transition"
               />
               <p v-if="errors.office_name" class="mt-1 text-xs font-bold text-rose-600">{{ errors.office_name[0] }}</p>
             </div>
           </div>
 
-          <!-- Subdomain & Domain Selection -->
+          <!-- Subdomain (fixed domain: jalsateg.com) -->
           <div class="bg-stone-50 p-4 rounded-2xl border border-stone-200 space-y-3">
             <div class="flex justify-between items-center">
-              <label class="block text-xs font-bold text-stone-800">رابط النطاق الفرعي الخاص بمكتبك (Subdomain) *</label>
+              <label class="block text-xs font-bold text-stone-800">رابط مكتبك (Subdomain) *</label>
               <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">نطاق خاص ومستقل 🔒</span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 dir-ltr">
-              <!-- Subdomain Slug Input -->
-              <div class="sm:col-span-7 relative">
-                <input 
-                  v-model="form.subdomain"
-                  type="text"
-                  required
-                  placeholder="alfahd"
-                  class="w-full px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 text-sm font-mono text-left"
-                />
-              </div>
-
-              <!-- Domain Selector Dropdown -->
-              <div class="sm:col-span-5">
-                <select
-                  v-model="selectedDomain"
-                  class="w-full px-3 py-2.5 bg-white border border-stone-300 rounded-xl text-stone-800 text-xs font-mono font-bold focus:outline-none focus:border-red-600"
-                >
-                  <option v-for="d in availableDomains" :key="d.value" :value="d.value">
-                    .{{ d.value }}
-                  </option>
-                </select>
-              </div>
+            <div class="flex items-center gap-2 dir-ltr">
+              <input
+                v-model="form.subdomain"
+                type="text"
+                required
+                placeholder="اكتب الرابط بنفسك مثل alfahd"
+                class="flex-1 px-3.5 py-2.5 bg-white border border-stone-300 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 text-sm font-mono text-left"
+                @input="form.subdomain = form.subdomain.toLowerCase().replace(/[^a-z0-9-]/g, '')"
+              />
+              <span class="shrink-0 text-sm font-mono font-black text-stone-700 px-1">.jalsateg.com</span>
             </div>
 
-            <!-- Live Subdomain URL Preview Badge -->
             <div v-if="formattedSubdomain" class="p-3 bg-white border border-stone-200 rounded-xl flex items-center justify-between gap-2 text-xs dir-rtl">
               <div class="flex items-center gap-2 overflow-hidden">
                 <span class="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0 animate-pulse"></span>
-                <span class="text-stone-500 font-bold flex-shrink-0">رابط مكتبك المستقل:</span>
+                <span class="text-stone-500 font-bold flex-shrink-0">رابط مكتبك:</span>
                 <span class="font-mono dir-ltr font-black text-red-700 truncate">{{ formattedSubdomain }}</span>
               </div>
-              <span class="text-[10px] font-bold text-stone-400 bg-stone-100 px-2 py-1 rounded-md flex-shrink-0">متاح للمكتب</span>
             </div>
 
             <p v-if="errors.subdomain" class="text-xs font-bold text-rose-600 dir-rtl">{{ errors.subdomain[0] }}</p>
           </div>
 
-          <!-- Email & Phone -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-stone-700 mb-1.5">البريد الإلكتروني *</label>
-              <input 
-                v-model="form.email"
-                type="email"
-                required
-                placeholder="lawyer@example.com"
-                class="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 text-sm font-medium transition"
-              />
-              <p v-if="errors.email" class="mt-1 text-xs font-bold text-rose-600">{{ errors.email[0] }}</p>
-            </div>
+          <!-- Email -->
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1.5">البريد الإلكتروني *</label>
+            <input
+              v-model="form.email"
+              type="email"
+              required
+              autocomplete="email"
+              placeholder="lawyer@example.com"
+              class="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 text-sm font-medium transition"
+            />
+            <p class="mt-1 text-[11px] font-semibold text-stone-400">سنرسل رسالة تأكيد إلى هذا البريد بعد التسجيل</p>
+            <p v-if="errors.email" class="mt-1 text-xs font-bold text-rose-600">{{ errors.email[0] }}</p>
+          </div>
 
-            <div>
-              <label class="block text-xs font-bold text-stone-700 mb-1.5">رقم الهاتف *</label>
-              <input 
+          <!-- Phone -->
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1.5">رقم التليفون *</label>
+            <div class="flex gap-2 dir-ltr">
+              <div class="flex items-center gap-1.5 px-3 py-3 bg-stone-100 border border-stone-200 rounded-xl text-stone-600 text-sm font-bold shrink-0">
+                <span class="text-base leading-none">🇪🇬</span>
+                <span>+20</span>
+              </div>
+              <input
                 v-model="form.phone"
-                type="text"
+                type="tel"
                 required
+                inputmode="numeric"
+                autocomplete="tel"
+                maxlength="11"
                 placeholder="01012345678"
-                class="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 text-sm font-medium transition"
+                class="w-full px-4 py-3 bg-stone-50 border border-stone-200 rounded-xl text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-600 text-sm font-medium transition text-left"
+                @input="form.phone = form.phone.replace(/[^\d]/g, '').slice(0, 11)"
               />
-              <p v-if="errors.phone" class="mt-1 text-xs font-bold text-rose-600">{{ errors.phone[0] }}</p>
             </div>
+            <p class="mt-1 text-[11px] font-semibold text-stone-400 dir-rtl">رقم مصري يبدأ بـ 010 أو 011 أو 012 أو 015</p>
+            <p v-if="errors.phone" class="mt-1 text-xs font-bold text-rose-600 dir-rtl">{{ errors.phone[0] }}</p>
           </div>
 
           <!-- Password & Confirmation -->

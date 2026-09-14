@@ -2,7 +2,11 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\Tenant;
+use App\Models\User;
+use App\Notifications\OfficeRegistrationConfirmation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
@@ -18,14 +22,78 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
-        $response = $this->post('/register', [
+        Notification::fake();
+
+        $response = $this->postJson('/register', [
             'name' => 'Test User',
+            'office_name' => 'مكتب الاختبار',
+            'subdomain' => 'testoffice',
+            'domain' => 'localhost',
             'email' => 'test@example.com',
+            'phone' => '01012345678',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
 
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+            ]);
+
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $this->assertDatabaseHas('tenants', [
+            'slug' => 'testoffice',
+            'domain' => 'jalsateg.com',
+            'phone' => '01012345678',
+        ]);
+        $this->assertDatabaseHas('users', [
+            'email' => 'test@example.com',
+            'phone' => '01012345678',
+        ]);
+        $this->assertStringContainsString('testoffice.localhost', $response->json('redirect_url'));
+        $this->assertStringContainsString('verify-email', $response->json('redirect_url'));
+
+        $user = User::where('email', 'test@example.com')->first();
+        Notification::assertSentTo($user, OfficeRegistrationConfirmation::class);
+    }
+
+    public function test_phone_must_be_valid_egyptian_mobile(): void
+    {
+        $response = $this->postJson('/register', [
+            'name' => 'Test User',
+            'office_name' => 'مكتب الاختبار',
+            'subdomain' => 'badphone',
+            'domain' => 'localhost',
+            'email' => 'phone@example.com',
+            'phone' => '12345',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['phone']);
+    }
+
+    public function test_existing_email_requires_correct_password(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'existing@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $response = $this->postJson('/register', [
+            'name' => 'Hacker',
+            'office_name' => 'مكتب مخترق',
+            'subdomain' => 'hackeroffice',
+            'domain' => 'localhost',
+            'email' => 'existing@example.com',
+            'phone' => '01099999999',
+            'password' => 'wrong-password',
+            'password_confirmation' => 'wrong-password',
+        ]);
+
+        $response->assertUnprocessable();
+        $this->assertGuest();
+        $this->assertDatabaseMissing('tenants', ['slug' => 'hackeroffice']);
     }
 }

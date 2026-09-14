@@ -23,14 +23,18 @@ class TaskTest extends TestCase
 
         $this->tenant = Tenant::factory()->create();
         $this->user = User::factory()->create();
-        $this->user->tenants()->attach($this->tenant->id, ['is_owner' => true, 'status' => 'active']);
+        $this->user->tenants()->attach($this->tenant->id, [
+            'is_owner' => true,
+            'status' => 'active',
+            'joined_at' => now(),
+        ]);
     }
 
     public function test_tasks_page_can_be_rendered(): void
     {
         $response = $this->actingAs($this->user)
-            ->withSession(['current_tenant_id' => $this->tenant->id])
-            ->get(route('tasks.index'));
+            ->onTenant($this->tenant)
+            ->get($this->tenantUrl($this->tenant, '/tasks'));
 
         $response->assertOk();
     }
@@ -51,8 +55,8 @@ class TaskTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->withSession(['current_tenant_id' => $this->tenant->id])
-            ->post(route('tasks.store'), [
+            ->onTenant($this->tenant)
+            ->post($this->tenantUrl($this->tenant, '/tasks'), [
                 'title' => 'إعداد لائحة الدعوى',
                 'description' => 'كتابة الأسانيد والشواهد',
                 'case_id' => $case->id,
@@ -79,8 +83,8 @@ class TaskTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->withSession(['current_tenant_id' => $this->tenant->id])
-            ->patch(route('tasks.update-status', $task->id), [
+            ->onTenant($this->tenant)
+            ->patch($this->tenantUrl($this->tenant, '/tasks/'.$task->id.'/status'), [
                 'status' => 'completed',
             ]);
 
@@ -102,8 +106,8 @@ class TaskTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->withSession(['current_tenant_id' => $this->tenant->id])
-            ->delete(route('tasks.destroy', $task->id));
+            ->onTenant($this->tenant)
+            ->delete($this->tenantUrl($this->tenant, '/tasks/'.$task->id));
 
         $response->assertRedirect();
         $this->assertSoftDeleted('tasks', ['id' => $task->id]);

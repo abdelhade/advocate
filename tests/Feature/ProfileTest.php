@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -10,24 +11,38 @@ class ProfileTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected User $user;
+    protected Tenant $tenant;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->tenant = Tenant::factory()->create();
+        $this->user = User::factory()->create();
+        $this->user->tenants()->attach($this->tenant->id, [
+            'is_owner' => true,
+            'status' => 'active',
+            'joined_at' => now(),
+        ]);
+    }
+
     public function test_profile_page_is_displayed(): void
     {
-        $user = User::factory()->create();
-
         $response = $this
-            ->actingAs($user)
-            ->get('/profile');
+            ->actingAs($this->user)
+            ->onTenant($this->tenant)
+            ->get($this->tenantUrl($this->tenant, '/profile'));
 
         $response->assertOk();
     }
 
     public function test_profile_information_can_be_updated(): void
     {
-        $user = User::factory()->create();
-
         $response = $this
-            ->actingAs($user)
-            ->patch('/profile', [
+            ->actingAs($this->user)
+            ->onTenant($this->tenant)
+            ->patch($this->tenantUrl($this->tenant, '/profile'), [
                 'name' => 'Test User',
                 'email' => 'test@example.com',
             ]);
@@ -36,38 +51,36 @@ class ProfileTest extends TestCase
             ->assertSessionHasNoErrors()
             ->assertRedirect('/profile');
 
-        $user->refresh();
+        $this->user->refresh();
 
-        $this->assertSame('Test User', $user->name);
-        $this->assertSame('test@example.com', $user->email);
-        $this->assertNull($user->email_verified_at);
+        $this->assertSame('Test User', $this->user->name);
+        $this->assertSame('test@example.com', $this->user->email);
+        $this->assertNull($this->user->email_verified_at);
     }
 
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged(): void
     {
-        $user = User::factory()->create();
-
         $response = $this
-            ->actingAs($user)
-            ->patch('/profile', [
+            ->actingAs($this->user)
+            ->onTenant($this->tenant)
+            ->patch($this->tenantUrl($this->tenant, '/profile'), [
                 'name' => 'Test User',
-                'email' => $user->email,
+                'email' => $this->user->email,
             ]);
 
         $response
             ->assertSessionHasNoErrors()
             ->assertRedirect('/profile');
 
-        $this->assertNotNull($user->refresh()->email_verified_at);
+        $this->assertNotNull($this->user->refresh()->email_verified_at);
     }
 
     public function test_user_can_delete_their_account(): void
     {
-        $user = User::factory()->create();
-
         $response = $this
-            ->actingAs($user)
-            ->delete('/profile', [
+            ->actingAs($this->user)
+            ->onTenant($this->tenant)
+            ->delete($this->tenantUrl($this->tenant, '/profile'), [
                 'password' => 'password',
             ]);
 
@@ -76,17 +89,16 @@ class ProfileTest extends TestCase
             ->assertRedirect('/');
 
         $this->assertGuest();
-        $this->assertSoftDeleted($user);
+        $this->assertSoftDeleted($this->user);
     }
 
     public function test_correct_password_must_be_provided_to_delete_account(): void
     {
-        $user = User::factory()->create();
-
         $response = $this
-            ->actingAs($user)
-            ->from('/profile')
-            ->delete('/profile', [
+            ->actingAs($this->user)
+            ->onTenant($this->tenant)
+            ->from($this->tenantUrl($this->tenant, '/profile'))
+            ->delete($this->tenantUrl($this->tenant, '/profile'), [
                 'password' => 'wrong-password',
             ]);
 
@@ -94,6 +106,6 @@ class ProfileTest extends TestCase
             ->assertSessionHasErrors('password')
             ->assertRedirect('/profile');
 
-        $this->assertNotNull($user->fresh());
+        $this->assertNotNull($this->user->fresh());
     }
 }

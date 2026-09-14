@@ -17,6 +17,7 @@ class Tenant extends Model
         'id',
         'name',
         'slug',
+        'domain',
         'email',
         'phone',
         'status',
@@ -67,5 +68,19 @@ class Tenant extends Model
     public function invoices(): HasMany
     {
         return $this->hasMany(Invoice::class, 'tenant_id');
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class, 'tenant_id');
+    }
+
+    public function currentSubscription(): ?Subscription
+    {
+        return $this->subscriptions()
+            ->with('plan')
+            ->whereIn('status', ['active', 'trialing', 'past_due'])
+            ->latest('starts_at')
+            ->first();
     }
 }

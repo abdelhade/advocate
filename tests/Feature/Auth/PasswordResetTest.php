@@ -14,7 +14,10 @@ class PasswordResetTest extends TestCase
 
     public function test_reset_password_link_screen_can_be_rendered(): void
     {
-        $response = $this->get('/forgot-password');
+        [, $tenant] = $this->createTenantUser();
+
+        $response = $this->onTenant($tenant)
+            ->get($this->tenantUrl($tenant, '/forgot-password'));
 
         $response->assertStatus(200);
     }
@@ -23,9 +26,10 @@ class PasswordResetTest extends TestCase
     {
         Notification::fake();
 
-        $user = User::factory()->create();
+        [$user, $tenant] = $this->createTenantUser();
 
-        $this->post('/forgot-password', ['email' => $user->email]);
+        $this->onTenant($tenant)
+            ->post($this->tenantUrl($tenant, '/forgot-password'), ['email' => $user->email]);
 
         Notification::assertSentTo($user, ResetPassword::class);
     }
@@ -34,12 +38,14 @@ class PasswordResetTest extends TestCase
     {
         Notification::fake();
 
-        $user = User::factory()->create();
+        [$user, $tenant] = $this->createTenantUser();
 
-        $this->post('/forgot-password', ['email' => $user->email]);
+        $this->onTenant($tenant)
+            ->post($this->tenantUrl($tenant, '/forgot-password'), ['email' => $user->email]);
 
-        Notification::assertSentTo($user, ResetPassword::class, function ($notification) {
-            $response = $this->get('/reset-password/'.$notification->token);
+        Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($tenant) {
+            $response = $this->onTenant($tenant)
+                ->get($this->tenantUrl($tenant, '/reset-password/'.$notification->token));
 
             $response->assertStatus(200);
 
@@ -51,21 +57,23 @@ class PasswordResetTest extends TestCase
     {
         Notification::fake();
 
-        $user = User::factory()->create();
+        [$user, $tenant] = $this->createTenantUser();
 
-        $this->post('/forgot-password', ['email' => $user->email]);
+        $this->onTenant($tenant)
+            ->post($this->tenantUrl($tenant, '/forgot-password'), ['email' => $user->email]);
 
-        Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
-            $response = $this->post('/reset-password', [
-                'token' => $notification->token,
-                'email' => $user->email,
-                'password' => 'password',
-                'password_confirmation' => 'password',
-            ]);
+        Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user, $tenant) {
+            $response = $this->onTenant($tenant)
+                ->post($this->tenantUrl($tenant, '/reset-password'), [
+                    'token' => $notification->token,
+                    'email' => $user->email,
+                    'password' => 'password',
+                    'password_confirmation' => 'password',
+                ]);
 
             $response
                 ->assertSessionHasNoErrors()
-                ->assertRedirect(route('login'));
+                ->assertRedirect('/login');
 
             return true;
         });

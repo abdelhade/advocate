@@ -25,7 +25,11 @@ class FinancialTest extends TestCase
 
         $this->tenant = Tenant::factory()->create();
         $this->user = User::factory()->create();
-        $this->user->tenants()->attach($this->tenant->id, ['is_owner' => true, 'status' => 'active']);
+        $this->user->tenants()->attach($this->tenant->id, [
+            'is_owner' => true,
+            'status' => 'active',
+            'joined_at' => now(),
+        ]);
 
         $this->client = Client::create([
             'tenant_id' => $this->tenant->id,
@@ -38,8 +42,8 @@ class FinancialTest extends TestCase
     public function test_invoices_page_can_be_rendered(): void
     {
         $response = $this->actingAs($this->user)
-            ->withSession(['current_tenant_id' => $this->tenant->id])
-            ->get(route('invoices.index'));
+            ->onTenant($this->tenant)
+            ->get($this->tenantUrl($this->tenant, '/invoices'));
 
         $response->assertOk();
     }
@@ -47,8 +51,8 @@ class FinancialTest extends TestCase
     public function test_invoice_creation_with_items_calculates_totals_correctly(): void
     {
         $response = $this->actingAs($this->user)
-            ->withSession(['current_tenant_id' => $this->tenant->id])
-            ->post(route('invoices.store'), [
+            ->onTenant($this->tenant)
+            ->post($this->tenantUrl($this->tenant, '/invoices'), [
                 'client_id' => $this->client->id,
                 'invoice_number' => 'INV-2026-0001',
                 'discount_amount' => 100.00,
@@ -59,9 +63,8 @@ class FinancialTest extends TestCase
                 ],
             ]);
 
-        $response->assertRedirect(route('invoices.index'));
+        $response->assertRedirect();
 
-        // Subtotal = 1000 + 500 = 1500, total = 1500 - 100 + 50 = 1450
         $this->assertDatabaseHas('invoices', [
             'tenant_id' => $this->tenant->id,
             'invoice_number' => 'INV-2026-0001',
@@ -84,8 +87,8 @@ class FinancialTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-            ->withSession(['current_tenant_id' => $this->tenant->id])
-            ->post(route('payments.store'), [
+            ->onTenant($this->tenant)
+            ->post($this->tenantUrl($this->tenant, '/payments'), [
                 'client_id' => $this->client->id,
                 'invoice_id' => $invoice->id,
                 'payment_number' => 'REC-0001',
@@ -110,8 +113,8 @@ class FinancialTest extends TestCase
     public function test_user_can_create_expense(): void
     {
         $response = $this->actingAs($this->user)
-            ->withSession(['current_tenant_id' => $this->tenant->id])
-            ->post(route('expenses.store'), [
+            ->onTenant($this->tenant)
+            ->post($this->tenantUrl($this->tenant, '/expenses'), [
                 'category' => 'رسوم قضائية وتراخيص',
                 'amount' => 350.00,
                 'expense_date' => now()->format('Y-m-d'),

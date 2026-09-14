@@ -17,7 +17,8 @@ class TenantFactory extends Factory
         $name = fake()->company() . ' للمحاماة';
         return [
             'name' => $name,
-            'slug' => fake()->unique()->slug(),
+            'slug' => fake()->unique()->regexify('[a-z]{6,12}'),
+            'domain' => config('tenancy.tenant_base_domain', 'localhost'),
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->phoneNumber(),
             'status' => 'active',

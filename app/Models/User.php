@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Notifications\OfficeRegistrationConfirmation;
 use App\Services\TenantContext;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable, SoftDeletes;
 
@@ -36,9 +38,6 @@ class User extends Authenticatable
         ];
     }
 
-    /**
-     * Tenants this user belongs to.
-     */
     public function tenants(): BelongsToMany
     {
         return $this->belongsToMany(Tenant::class, 'tenant_user')
@@ -46,25 +45,16 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    /**
-     * Get the active tenant for the current request context.
-     */
     public function activeTenant(): ?Tenant
     {
         return app(TenantContext::class)->get();
     }
 
-    /**
-     * Alias for activeTenant with fallback for tests context.
-     */
     public function currentTenant(): ?Tenant
     {
         return $this->activeTenant() ?? $this->tenants()->first();
     }
 
-    /**
-     * Check if user is owner of a specific tenant.
-     */
     public function isOwnerOf(Tenant|string $tenant): bool
     {
         $tenantId = $tenant instanceof Tenant ? $tenant->id : $tenant;
@@ -73,5 +63,21 @@ class User extends Authenticatable
             ->where('tenants.id', $tenantId)
             ->wherePivot('is_owner', true)
             ->exists();
+    }
+
+    public function hasTenantPermission(string $permission, ?Tenant $tenant = null): bool
+    {
+        $tenant = $tenant ?? $this->currentTenant();
+        if (! $tenant) {
+            return false;
+        }
+
+        return app(\App\Services\TenantPermissionService::class)
+            ->userHas($this, $tenant, $permission);
+    }
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new OfficeRegistrationConfirmation($this->tenants()->first()));
     }
 }

@@ -1,77 +1,160 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { ref, watch, onMounted, onUnmounted } from 'vue';
+import AdminPasswordConfirm from '@/Components/AdminPasswordConfirm.vue';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 
 const props = defineProps({
     tenants: Object,
+    plans: { type: Array, default: () => [] },
     filters: Object,
 });
 
+const page = usePage();
 const search = ref(props.filters?.search || '');
+const planFilter = ref(props.filters?.plan || '');
 let searchTimeout = null;
 
-watch(search, (value) => {
+const applyFilters = () => {
+    router.get(route('admin.tenants.index'), {
+        search: search.value || undefined,
+        plan: planFilter.value || undefined,
+    }, {
+        preserveState: true,
+        replace: true,
+    });
+};
+
+watch(search, () => {
     clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(() => {
-        router.get(route('admin.tenants.index'), { search: value || undefined }, {
-            preserveState: true,
-            replace: true,
-        });
-    }, 400);
+    searchTimeout = setTimeout(applyFilters, 400);
 });
 
-// Dropdown State
+watch(planFilter, applyFilters);
+
 const activeDropdown = ref(null);
 const toggleDropdown = (id) => {
     activeDropdown.value = activeDropdown.value === id ? null : id;
 };
 
-// Close dropdown on outside click
 const closeDropdowns = (e) => {
     if (!e.target.closest('.dropdown-container')) {
         activeDropdown.value = null;
     }
 };
 
-onMounted(() => {
-    window.addEventListener('click', closeDropdowns);
-});
+onMounted(() => window.addEventListener('click', closeDropdowns));
+onUnmounted(() => window.removeEventListener('click', closeDropdowns));
 
-onUnmounted(() => {
-    window.removeEventListener('click', closeDropdowns);
-});
-
-// Modals State
 const confirmDelete = ref(null);
 const extendModalTenant = ref(null);
 const extendDays = ref(30);
+const planModalTenant = ref(null);
+const selectedPlanId = ref(null);
+const billingPeriod = ref('yearly');
 
-// Actions
-const deleteTenant = (id) => {
-    router.delete(route('admin.tenants.destroy', id), {
+const showPasswordModal = ref(false);
+const passwordProcessing = ref(false);
+const passwordError = ref('');
+const pendingAction = ref(null);
+
+const passwordErrorFromPage = computed(() => page.props.errors?.admin_password?.[0] || passwordError.value);
+
+const openPlanModal = (tenant) => {
+    planModalTenant.value = tenant;
+    selectedPlanId.value = tenant.plan_id;
+    billingPeriod.value = tenant.billing_period === 'monthly' ? 'monthly' : 'yearly';
+    activeDropdown.value = null;
+};
+
+const requestPassword = (action) => {
+    pendingAction.value = action;
+    passwordError.value = '';
+    showPasswordModal.value = true;
+    activeDropdown.value = null;
+};
+
+const runWithPassword = (adminPassword) => {
+    if (!pendingAction.value) return;
+    passwordProcessing.value = true;
+    passwordError.value = '';
+
+    const { method, url, data, onSuccess } = pendingAction.value;
+    const payload = { ...(data || {}), admin_password: adminPassword };
+
+    const options = {
+        preserveScroll: true,
         onSuccess: () => {
+            showPasswordModal.value = false;
+            pendingAction.value = null;
             confirmDelete.value = null;
-            activeDropdown.value = null;
+            extendModalTenant.value = null;
+            planModalTenant.value = null;
+            onSuccess?.();
         },
+        onError: (errors) => {
+            passwordError.value = errors.admin_password || 'تعذر تنفيذ الإجراء. تحقق من كلمة المرور.';
+        },
+        onFinish: () => {
+            passwordProcessing.value = false;
+        },
+    };
+
+    if (method === 'delete') {
+        router.post(url, { ...payload, _method: 'delete' }, options);
+    } else {
+        router.post(url, payload, options);
+    }
+};
+
+const deleteTenant = (id) => {
+    requestPassword({
+        method: 'delete',
+        url: route('admin.tenants.destroy', id),
+        data: {},
     });
 };
 
 const extendSubscription = (id, days) => {
-    router.post(route('admin.tenants.extend', id), { days }, {
-        onSuccess: () => {
-            extendModalTenant.value = null;
-            activeDropdown.value = null;
-        },
+    requestPassword({
+        method: 'post',
+        url: route('admin.tenants.extend', id),
+        data: { days },
     });
 };
 
 const toggleStatus = (id) => {
-    router.post(route('admin.tenants.toggle_status', id), {}, {
-        onSuccess: () => {
-            activeDropdown.value = null;
+    requestPassword({
+        method: 'post',
+        url: route('admin.tenants.toggle_status', id),
+        data: {},
+    });
+};
+
+const updatePlan = () => {
+    if (!planModalTenant.value || !selectedPlanId.value) return;
+    requestPassword({
+        method: 'post',
+        url: route('admin.tenants.update_plan', planModalTenant.value.id),
+        data: {
+            plan_id: selectedPlanId.value,
+            billing_period: billingPeriod.value,
         },
     });
+};
+
+const planBadgeClass = (slug) => {
+    if (slug === 'enterprise') return 'bg-stone-900 text-white border-stone-800';
+    if (slug === 'professional') return 'bg-red-50 text-red-700 border-red-200';
+    if (slug === 'free') return 'bg-stone-100 text-stone-700 border-stone-200';
+    return 'bg-amber-50 text-amber-800 border-amber-200';
+};
+
+const statusLabel = (tenant) => {
+    if (tenant.subscription_status === 'trialing' || tenant.is_trial) return 'تجريبي';
+    if (tenant.subscription_status === 'expired') return 'منتهي';
+    if (tenant.subscription_status === 'cancelled' || tenant.status !== 'active') return 'موقوف';
+    return 'نشط';
 };
 </script>
 
@@ -94,14 +177,25 @@ const toggleStatus = (id) => {
 
         <!-- Search & Filters -->
         <div class="bg-white rounded-2xl border border-stone-200/80 p-4 mb-6">
-            <div class="relative">
-                <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input
-                    v-model="search"
-                    type="text"
-                    placeholder="بحث باسم المكتب، البريد، أو معرّف المكتب..."
-                    class="w-full pr-12 pl-4 py-3 rounded-xl border border-stone-200 bg-stone-50 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all text-sm font-medium"
-                />
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="relative sm:col-span-2">
+                    <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input
+                        v-model="search"
+                        type="text"
+                        placeholder="بحث باسم المكتب، البريد، أو معرّف المكتب..."
+                        class="w-full pr-12 pl-4 py-3 rounded-xl border border-stone-200 bg-stone-50 text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all text-sm font-medium"
+                    />
+                </div>
+                <select
+                    v-model="planFilter"
+                    class="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 text-stone-800 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500"
+                >
+                    <option value="">كل خطط الاشتراك</option>
+                    <option v-for="plan in plans" :key="plan.id" :value="plan.slug">
+                        {{ plan.name }} — {{ Number(plan.price_yearly) === 0 ? 'مجاني' : Number(plan.price_yearly).toLocaleString() + ' ج.م/سنة' }}
+                    </option>
+                </select>
             </div>
         </div>
 
@@ -122,6 +216,7 @@ const toggleStatus = (id) => {
                         <tr class="bg-stone-50/80 border-b border-stone-200/80 text-stone-500 text-xs font-bold uppercase tracking-wider">
                             <th class="px-6 py-4">#</th>
                             <th class="px-6 py-4">المكتب والمسؤول</th>
+                            <th class="px-6 py-4">نوع الاشتراك</th>
                             <th class="px-6 py-4">حالة الاشتراك</th>
                             <th class="px-6 py-4">تاريخ بداية الاشتراك</th>
                             <th class="px-6 py-4">تاريخ انتهاء الاشتراك</th>
@@ -142,13 +237,31 @@ const toggleStatus = (id) => {
                                 </Link>
                             </td>
                             <td class="px-6 py-4">
-                                <span v-if="tenant.status === 'active'" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
+                                <div class="space-y-1">
+                                    <span
+                                        class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border"
+                                        :class="planBadgeClass(tenant.plan_slug)"
+                                    >
+                                        {{ tenant.plan_name }}
+                                    </span>
+                                    <p class="text-[11px] text-stone-500 font-semibold">
+                                        <span v-if="Number(tenant.price_yearly) === 0">مجاني</span>
+                                        <span v-else>
+                                            {{ tenant.billing_period === 'monthly'
+                                                ? Number(tenant.price_monthly).toLocaleString() + ' ج.م / شهر'
+                                                : Number(tenant.price_yearly).toLocaleString() + ' ج.م / سنة' }}
+                                        </span>
+                                    </p>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span v-if="tenant.status === 'active' && tenant.subscription_status !== 'expired'" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold border border-emerald-200">
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                                    نشط ومفعل
+                                    {{ statusLabel(tenant) }}
                                 </span>
                                 <span v-else class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 text-rose-700 text-xs font-bold border border-rose-200">
                                     <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
-                                    ملغى / متوقف
+                                    {{ statusLabel(tenant) }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 font-mono text-stone-700 dir-ltr text-right">
@@ -194,6 +307,13 @@ const toggleStatus = (id) => {
 
                                             <!-- Extend Options -->
                                             <div class="py-1">
+                                                <button
+                                                    @click="openPlanModal(tenant)"
+                                                    class="w-full text-right flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-blue-700 hover:bg-blue-50 transition-colors cursor-pointer"
+                                                >
+                                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                                                    تحديد / تغيير خطة الاشتراك
+                                                </button>
                                                 <button
                                                     @click="extendSubscription(tenant.id, 30)"
                                                     class="w-full text-right flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-emerald-700 hover:bg-emerald-50 transition-colors cursor-pointer"
@@ -320,6 +440,60 @@ const toggleStatus = (id) => {
             </Transition>
         </Teleport>
 
+        <!-- Assign Plan Modal -->
+        <Teleport to="body">
+            <Transition
+                enter-active-class="transition-all duration-200"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition-all duration-200"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+            >
+                <div v-if="planModalTenant" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" @click.self="planModalTenant = null">
+                    <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-right dir-rtl">
+                        <h3 class="text-lg font-bold text-stone-900 mb-1">تحديد نوع الاشتراك</h3>
+                        <p class="text-xs text-stone-500 mb-5">حسب خطط التسعير — المكتب: <strong class="text-stone-800">{{ planModalTenant.name }}</strong></p>
+
+                        <div class="space-y-2 mb-4">
+                            <label
+                                v-for="plan in plans"
+                                :key="plan.id"
+                                class="flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition"
+                                :class="Number(selectedPlanId) === Number(plan.id) ? 'border-red-600 bg-red-50/50' : 'border-stone-200 hover:border-stone-300'"
+                            >
+                                <input v-model="selectedPlanId" type="radio" :value="plan.id" class="mt-1 text-red-700" />
+                                <div class="flex-1">
+                                    <p class="text-sm font-black text-stone-900">{{ plan.name }}</p>
+                                    <p class="text-[11px] text-stone-500 font-semibold">{{ plan.tagline }}</p>
+                                    <p class="text-xs font-bold text-red-700 mt-1">
+                                        <span v-if="Number(plan.price_yearly) === 0">مجاني</span>
+                                        <span v-else>
+                                            شهري: {{ Number(plan.price_monthly).toLocaleString() }} ج.م —
+                                            سنوي: {{ Number(plan.price_yearly).toLocaleString() }} ج.م
+                                        </span>
+                                    </p>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="mb-5">
+                            <label class="block text-xs font-bold text-stone-700 mb-2">فترة الفوترة</label>
+                            <select v-model="billingPeriod" class="w-full px-4 py-3 rounded-xl border border-stone-200 bg-stone-50 text-sm font-bold">
+                                <option value="yearly">سنوي</option>
+                                <option value="monthly">شهري</option>
+                            </select>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <button @click="planModalTenant = null" class="flex-1 px-4 py-3 border border-stone-200 rounded-xl text-sm font-semibold text-stone-600 hover:bg-stone-50">إلغاء</button>
+                            <button @click="updatePlan" class="flex-1 px-4 py-3 bg-red-700 hover:bg-red-800 text-white rounded-xl text-sm font-bold">حفظ الخطة</button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
         <!-- Delete Confirmation Modal -->
         <Teleport to="body">
             <Transition
@@ -355,5 +529,15 @@ const toggleStatus = (id) => {
                 </div>
             </Transition>
         </Teleport>
+
+        <AdminPasswordConfirm
+            :show="showPasswordModal"
+            :processing="passwordProcessing"
+            :error="passwordErrorFromPage"
+            title="تأكيد بكلمة مرور المدير"
+            description="أي تعديل على المكاتب يتطلب إدخال كلمة مرور المدير للتأكيد."
+            @close="showPasswordModal = false; pendingAction = null"
+            @confirm="runWithPassword"
+        />
     </AdminLayout>
 </template>
