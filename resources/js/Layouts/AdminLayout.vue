@@ -1,11 +1,30 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { Link, router, usePage } from '@inertiajs/vue3';
 
 const page = usePage();
 const admin = computed(() => page.props.auth?.user || page.props.auth?.admin || { name: 'مدير النظام' });
 
 const sidebarOpen = ref(false);
+const isDarkMode = ref(false);
+
+const toggleTheme = () => {
+    isDarkMode.value = !isDarkMode.value;
+    if (isDarkMode.value) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+    }
+};
+
+onMounted(() => {
+    isDarkMode.value = localStorage.getItem('theme') === 'dark';
+    if (isDarkMode.value) {
+        document.documentElement.classList.add('dark');
+    }
+});
 
 const navigation = [
     {
@@ -133,6 +152,16 @@ const flash = computed(() => page.props.flash || {});
                 </h1>
 
                 <div class="flex items-center gap-4">
+                    <button
+                        @click="toggleTheme"
+                        type="button"
+                        class="px-3 py-1.5 rounded-xl text-stone-600 hover:text-stone-900 bg-white hover:bg-stone-50 transition-all flex items-center gap-2 text-xs font-bold border border-stone-200 shadow-sm cursor-pointer"
+                        :title="isDarkMode ? 'التحويل للوضع المضيء' : 'التحويل للوضع الداكن'"
+                    >
+                        <svg v-if="isDarkMode" class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <svg v-else class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                        <span>{{ isDarkMode ? 'مضيء' : 'داكن' }}</span>
+                    </button>
                     <a href="/" target="_blank" class="hidden sm:flex items-center gap-2 text-sm text-stone-400 hover:text-red-700 transition-colors px-3 py-2 rounded-lg hover:bg-red-50">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                         زيارة الموقع
