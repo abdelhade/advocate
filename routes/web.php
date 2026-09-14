@@ -24,9 +24,9 @@ use Inertia\Inertia;
 // Central / Home Routes
 Route::get('/', function () {
     $tenantCount = \App\Models\Tenant::count();
-    $clientCount = \App\Models\Tenant\Client::withoutGlobalScopes()->count();
-    $caseCount = \App\Models\Tenant\LegalCase::withoutGlobalScopes()->count();
-    $invoiceCount = \App\Models\Tenant\Invoice::withoutGlobalScopes()->count();
+    $clientCount = \App\Models\Client::withoutGlobalScopes()->count();
+    $caseCount = \App\Models\LegalCase::withoutGlobalScopes()->count();
+    $invoiceCount = \App\Models\Invoice::withoutGlobalScopes()->count();
 
     $formatNumber = function ($number) {
         if ($number >= 1000000) {
