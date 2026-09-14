@@ -23,7 +23,37 @@ use Inertia\Inertia;
 
 // Central / Home Routes
 Route::get('/', function () {
-    return Inertia::render('CentralWelcome');
+    $tenantCount = \App\Models\Tenant::count();
+    $clientCount = \App\Models\Tenant\Client::withoutGlobalScopes()->count();
+    $caseCount = \App\Models\Tenant\LegalCase::withoutGlobalScopes()->count();
+    $invoiceCount = \App\Models\Tenant\Invoice::withoutGlobalScopes()->count();
+
+    $formatNumber = function ($number) {
+        if ($number >= 1000000) {
+            return '+' . round($number / 1000000, 1) . ' مليون';
+        }
+        if ($number >= 1000) {
+            return '+' . round($number / 1000, 1) . ' ألف';
+        }
+        return '+' . number_format($number);
+    };
+
+    $stats = [
+        ['value' => $formatNumber($tenantCount), 'label' => 'مكتب محاماة'],
+        ['value' => $formatNumber($clientCount), 'label' => 'موكل مخدوم'],
+        ['value' => $formatNumber($caseCount), 'label' => 'قضية مُدارة'],
+        ['value' => $formatNumber($invoiceCount), 'label' => 'فاتورة ومطالبة أتعاب'],
+    ];
+
+    return Inertia::render('CentralWelcome', [
+        'stats' => $stats,
+        'realCounts' => [
+            'tenants' => $tenantCount,
+            'clients' => $clientCount,
+            'cases' => $caseCount,
+            'invoices' => $invoiceCount,
+        ],
+    ]);
 });
 
 Route::get('/pricing', function () {

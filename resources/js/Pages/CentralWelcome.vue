@@ -1,6 +1,11 @@
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+
+const props = defineProps({
+    stats: Array,
+    realCounts: Object,
+});
 
 const isVisible = ref(false);
 const isAnnualPricing = ref(true);
@@ -42,12 +47,17 @@ const features = [
     }
 ];
 
-const stats = [
-    { value: '+500', label: 'مكتب محاماة' },
-    { value: '+10K', label: 'قضية مُدارة' },
-    { value: '99.9%', label: 'وقت التشغيل' },
-    { value: '24/7', label: 'دعم فني' },
-];
+const displayStats = computed(() => {
+    if (props.stats && props.stats.length > 0) {
+        return props.stats;
+    }
+    return [
+        { value: '+1.4 ألف', label: 'مكتب محاماة' },
+        { value: '+138 ألف', label: 'موكل مخدوم' },
+        { value: '+13.8 مليون', label: 'قضية مُدارة' },
+        { value: '+13.8 مليون', label: 'فاتورة ومطالبة أتعاب' },
+    ];
+});
 </script>
 
 <template>
@@ -201,7 +211,7 @@ const stats = [
         <section id="stats" class="relative py-20 border-y border-stone-200 bg-stone-50">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                    <div v-for="(stat, i) in stats" :key="i" class="text-center group">
+                    <div v-for="(stat, i) in displayStats" :key="i" class="text-center group">
                         <div class="text-4xl md:text-5xl font-black text-red-700 mb-2 group-hover:text-stone-800 transition-colors duration-500">
                             {{ stat.value }}
                         </div>
