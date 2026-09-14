@@ -64,6 +64,10 @@ class TenantUserController extends Controller
 
         $allowed = $this->permissions->allPermissionNames();
 
+        $request->merge([
+            'email' => strtolower(trim((string) $request->input('email'))),
+        ]);
+
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
@@ -78,18 +82,17 @@ class TenantUserController extends Controller
             'password.min' => 'كلمة المرور يجب ألا تقل عن 6 أحرف.',
         ]);
 
+        $existingInTenant = $tenant->users()
+            ->where('users.email', $request->email)
+            ->exists();
+
+        if ($existingInTenant) {
+            return back()->withErrors(['email' => 'هذا البريد مضاف بالفعل إلى فريق هذا المكتب.']);
+        }
+
         $user = User::where('email', $request->email)->first();
 
-        if ($user) {
-            if ($tenant->users()->where('user_id', $user->id)->exists()) {
-                return back()->withErrors(['email' => 'هذا المستخدم مضاف بالفعل إلى فريق هذا المكتب.']);
-            }
-
-            $user->forceFill([
-                'name' => $request->name,
-                'phone' => $request->phone,
-            ])->save();
-        } else {
+        if (! $user) {
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,

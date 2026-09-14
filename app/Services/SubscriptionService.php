@@ -22,6 +22,10 @@ class SubscriptionService
         $plan = SubscriptionPlan::where('slug', 'free')->first()
             ?? SubscriptionPlan::orderBy('sort_order')->first();
 
+        if (! $plan) {
+            throw new \RuntimeException('لا توجد خطط اشتراك. شغّل SubscriptionPlanSeeder أولاً.');
+        }
+
         return Subscription::create([
             'id' => (string) Str::uuid(),
             'tenant_id' => $tenant->id,

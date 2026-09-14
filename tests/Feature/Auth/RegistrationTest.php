@@ -13,6 +13,13 @@ class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed(\Database\Seeders\SubscriptionPlanSeeder::class);
+    }
+
     public function test_registration_screen_can_be_rendered(): void
     {
         $response = $this->get('/register');
@@ -74,26 +81,26 @@ class RegistrationTest extends TestCase
             ->assertJsonValidationErrors(['phone']);
     }
 
-    public function test_existing_email_requires_correct_password(): void
+    public function test_registration_email_must_be_unique(): void
     {
-        $user = User::factory()->create([
+        User::factory()->create([
             'email' => 'existing@example.com',
-            'password' => bcrypt('password'),
         ]);
 
         $response = $this->postJson('/register', [
-            'name' => 'Hacker',
-            'office_name' => 'مكتب مخترق',
-            'subdomain' => 'hackeroffice',
+            'name' => 'Another Owner',
+            'office_name' => 'مكتب آخر',
+            'subdomain' => 'anotheroffice',
             'domain' => 'localhost',
             'email' => 'existing@example.com',
             'phone' => '01099999999',
-            'password' => 'wrong-password',
-            'password_confirmation' => 'wrong-password',
+            'password' => 'password',
+            'password_confirmation' => 'password',
         ]);
 
-        $response->assertUnprocessable();
+        $response->assertUnprocessable()
+            ->assertJsonValidationErrors(['email']);
         $this->assertGuest();
-        $this->assertDatabaseMissing('tenants', ['slug' => 'hackeroffice']);
+        $this->assertDatabaseMissing('tenants', ['slug' => 'anotheroffice']);
     }
 }

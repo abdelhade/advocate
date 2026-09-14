@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class RegisterController extends Controller
@@ -27,6 +26,7 @@ class RegisterController extends Controller
     public function register(Request $request)
     {
         $request->merge([
+            'email' => strtolower(trim((string) $request->input('email'))),
             'phone' => $this->normalizePhone($request->input('phone')),
             'domain' => 'jalsateg.com',
             'subdomain' => strtolower((string) $request->input('subdomain')),
@@ -43,7 +43,13 @@ class RegisterController extends Controller
                 'unique:tenants,slug',
                 Rule::notIn(TenantUrl::reservedSlugs()),
             ],
-            'email' => 'required|string|email|max:255',
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email'),
+            ],
             'phone' => [
                 'required',
                 'string',
@@ -54,6 +60,9 @@ class RegisterController extends Controller
             'subdomain.unique' => 'رابط المكتب هذا مستخدم بالفعل، يرجى اختيار رابط آخر.',
             'subdomain.alpha_dash' => 'رابط المكتب يجب أن يحتوي على أحرف وأرقام بدون مسافات.',
             'subdomain.not_in' => 'رابط المكتب هذا محجوز، يرجى اختيار رابط آخر.',
+            'email.required' => 'البريد الإلكتروني مطلوب.',
+            'email.email' => 'صيغة البريد الإلكتروني غير صحيحة.',
+            'email.unique' => 'هذا البريد مسجل مسبقاً. سجّل الدخول أو استخدم بريداً آخر.',
             'phone.required' => 'رقم التليفون مطلوب.',
             'phone.regex' => 'أدخل رقم تليفون مصري صحيح (مثال: 01012345678).',
             'password.confirmed' => 'تأكيد كلمة المرور غير متطابق.',
@@ -61,29 +70,14 @@ class RegisterController extends Controller
         ]);
 
         $tenant = DB::transaction(function () use ($request) {
-            $user = User::where('email', $request->email)->first();
-
-            if ($user) {
-                if (! Hash::check($request->password, $user->password)) {
-                    throw ValidationException::withMessages([
-                        'email' => 'هذا البريد مسجل مسبقاً. سجّل الدخول بكلمة المرور الصحيحة أو استخدم بريداً آخر.',
-                    ]);
-                }
-
-                $user->forceFill([
-                    'phone' => $request->phone,
-                    'name' => $request->name,
-                ])->save();
-            } else {
-                $user = User::create([
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'password' => Hash::make($request->password),
-                    'phone' => $request->phone,
-                    'status' => 'active',
-                    'email_verified_at' => null,
-                ]);
-            }
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($request->password),
+                'phone' => $request->phone,
+                'status' => 'active',
+                'email_verified_at' => null,
+            ]);
 
             $tenant = Tenant::create([
                 'id' => (string) Str::uuid(),
