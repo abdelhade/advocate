@@ -3,10 +3,11 @@ import TenantLayout from '@/Layouts/TenantLayout.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
+    type: 'individual',
     name: '',
     phone: '',
     email: '',
-    national_id: '',
+    national_id_or_cr: '',
     address: '',
     notes: '',
 });
@@ -36,17 +37,50 @@ const submit = () => {
                     <div>
                         <h3 class="text-base font-bold text-stone-800 mb-4 pb-2 border-b border-stone-100">البيانات الأساسية</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                            <!-- Client Type -->
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-stone-700 mb-2">نوع الموكل *</label>
+                                <div class="grid grid-cols-3 gap-3">
+                                    <button
+                                        type="button"
+                                        @click="form.type = 'individual'"
+                                        class="py-2.5 px-4 rounded-xl text-xs font-bold transition border cursor-pointer flex items-center justify-center gap-2"
+                                        :class="form.type === 'individual' ? 'bg-blue-700 text-white border-blue-700 shadow-sm' : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'"
+                                    >
+                                        👤 فرد / شخص
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="form.type = 'company'"
+                                        class="py-2.5 px-4 rounded-xl text-xs font-bold transition border cursor-pointer flex items-center justify-center gap-2"
+                                        :class="form.type === 'company' ? 'bg-blue-700 text-white border-blue-700 shadow-sm' : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'"
+                                    >
+                                        🏢 شركة / مؤسسة
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="form.type = 'organization'"
+                                        class="py-2.5 px-4 rounded-xl text-xs font-bold transition border cursor-pointer flex items-center justify-center gap-2"
+                                        :class="form.type === 'organization' ? 'bg-blue-700 text-white border-blue-700 shadow-sm' : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'"
+                                    >
+                                        🏛️ جهة / هيئة
+                                    </button>
+                                </div>
+                            </div>
+
                             <!-- Name -->
                             <div class="md:col-span-2">
                                 <label for="name" class="block text-sm font-semibold text-stone-700 mb-2">
-                                    اسم الموكل <span class="text-red-500">*</span>
+                                    اسم الموكل / الشركة <span class="text-red-500">*</span>
                                 </label>
                                 <input
                                     id="name"
                                     type="text"
                                     v-model="form.name"
                                     required
-                                    class="w-full px-4 py-3 rounded-xl border border-stone-300 bg-stone-50 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    placeholder="أدخل اسم الموكل بالكامل..."
+                                    class="w-full px-4 py-3 rounded-xl border border-stone-300 bg-stone-50 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium"
                                     :class="{ 'border-red-500 ring-1 ring-red-500': form.errors.name }"
                                 />
                                 <p v-if="form.errors.name" class="mt-1.5 text-sm text-red-600">{{ form.errors.name }}</p>
@@ -72,12 +106,13 @@ const submit = () => {
                                 <input
                                     id="national_id"
                                     type="text"
-                                    v-model="form.national_id"
+                                    v-model="form.national_id_or_cr"
+                                    placeholder="1010101010"
                                     dir="ltr"
                                     class="w-full px-4 py-3 rounded-xl border border-stone-300 bg-stone-50 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-left"
-                                    :class="{ 'border-red-500 ring-1 ring-red-500': form.errors.national_id }"
+                                    :class="{ 'border-red-500 ring-1 ring-red-500': form.errors.national_id_or_cr }"
                                 />
-                                <p v-if="form.errors.national_id" class="mt-1.5 text-sm text-red-600">{{ form.errors.national_id }}</p>
+                                <p v-if="form.errors.national_id_or_cr" class="mt-1.5 text-sm text-red-600">{{ form.errors.national_id_or_cr }}</p>
                             </div>
 
                             <!-- Email -->

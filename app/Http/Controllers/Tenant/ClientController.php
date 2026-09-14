@@ -54,10 +54,11 @@ class ClientController extends Controller
         Gate::authorize('create', Client::class);
 
         $validated = $request->validate([
-            'type' => ['required', 'in:individual,company,organization'],
+            'type' => ['nullable', 'in:individual,company,organization'],
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'email' => ['nullable', 'email', 'max:255'],
+            'national_id' => ['nullable', 'string', 'max:50'],
             'national_id_or_cr' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
@@ -65,6 +66,10 @@ class ClientController extends Controller
             'name.required' => 'اسم الموكل مطلوب.',
             'email.email' => 'يجب إدخال بريد إلكتروني صحيح.',
         ]);
+
+        $validated['type'] = $validated['type'] ?? 'individual';
+        $validated['national_id_or_cr'] = $validated['national_id_or_cr'] ?? $request->input('national_id');
+        unset($validated['national_id']);
 
         Client::create($validated);
 
@@ -125,10 +130,11 @@ class ClientController extends Controller
         Gate::authorize('update', $client);
 
         $validated = $request->validate([
-            'type' => ['required', 'in:individual,company,organization'],
+            'type' => ['nullable', 'in:individual,company,organization'],
             'name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'email' => ['nullable', 'email', 'max:255'],
+            'national_id' => ['nullable', 'string', 'max:50'],
             'national_id_or_cr' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string'],
             'notes' => ['nullable', 'string'],
@@ -136,6 +142,10 @@ class ClientController extends Controller
             'name.required' => 'اسم الموكل مطلوب.',
             'email.email' => 'يجب إدخال بريد إلكتروني صحيح.',
         ]);
+
+        $validated['type'] = $validated['type'] ?? $client->type ?? 'individual';
+        $validated['national_id_or_cr'] = $validated['national_id_or_cr'] ?? $request->input('national_id') ?? $client->national_id_or_cr;
+        unset($validated['national_id']);
 
         $client->update($validated);
 
