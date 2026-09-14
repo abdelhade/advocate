@@ -18,7 +18,7 @@ defineProps({
             <span>📊 لوحة القيادة التفاعلية</span>
         </template>
         <template #actions>
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
                 <Link
                     :href="route('cases.create')"
                     class="px-4 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-200 transition-all flex items-center gap-1.5"
@@ -30,6 +30,12 @@ defineProps({
                     class="px-4 py-2 bg-stone-800 hover:bg-stone-900 text-white rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-1.5"
                 >
                     👤 موكل جديد
+                </Link>
+                <Link
+                    :href="route('tenant.users.index')"
+                    class="px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded-xl text-xs font-bold shadow-md shadow-red-200 transition-all flex items-center gap-1.5"
+                >
+                    👨‍⚖️ فريق العمل للمكتب
                 </Link>
                 <Link
                     :href="route('invoices.create')"

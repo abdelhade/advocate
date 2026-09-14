@@ -26,6 +26,10 @@ Route::get('/', function () {
     return Inertia::render('CentralWelcome');
 });
 
+Route::get('/pricing', function () {
+    return Inertia::render('Central/Pricing');
+})->name('central.pricing');
+
 // Central Registration
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('central.register');
 Route::post('/register', [RegisterController::class, 'register'])->name('central.register.submit');
@@ -59,6 +63,8 @@ Route::middleware(AdminAuthenticated::class)->prefix('admin')->group(function ()
     Route::delete('/admins/{id}', [AdminAdminController::class, 'destroy'])->name('admin.admins.destroy');
 });
 
+use App\Http\Controllers\Tenant\TenantUserController;
+
 // Authenticated Tenant Operational Routes
 Route::middleware(['auth'])->group(function () {
     // Tenant Switching
@@ -66,6 +72,13 @@ Route::middleware(['auth'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Office Team / Users Management
+    Route::resource('tenant-users', TenantUserController::class)->names([
+        'index' => 'tenant.users.index',
+        'store' => 'tenant.users.store',
+        'destroy' => 'tenant.users.destroy',
+    ])->only(['index', 'store', 'destroy']);
 
     // Clients
     Route::resource('clients', ClientController::class);

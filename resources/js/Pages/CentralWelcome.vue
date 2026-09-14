@@ -1,8 +1,9 @@
 <script setup>
-import { Head } from '@inertiajs/vue3';
+import { Head, Link } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 
 const isVisible = ref(false);
+const isAnnualPricing = ref(true);
 
 onMounted(() => {
     isVisible.value = true;
@@ -254,101 +255,146 @@ const stats = [
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center max-w-3xl mx-auto mb-20">
                     <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-stone-200 border border-stone-300 text-stone-700 text-sm font-medium mb-6">
-                        خطط الأسعار
+                        خطط الأسعار والاشتراكات
                     </div>
-                    <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-stone-900 tracking-tight leading-tight">
+                    <h2 class="text-3xl sm:text-4xl lg:text-5xl font-black text-stone-900 tracking-tight leading-tight mb-6">
                         خطط مرنة تناسب <br>
                         <span class="text-red-700">كل مكتب محاماة</span>
                     </h2>
+
+                    <!-- Billing Toggle -->
+                    <div class="inline-flex items-center gap-2 p-1.5 bg-stone-200/70 rounded-2xl border border-stone-300/60">
+                        <button
+                            @click="isAnnualPricing = false"
+                            class="px-5 py-2 rounded-xl font-black text-xs transition-all cursor-pointer"
+                            :class="!isAnnualPricing ? 'bg-white text-stone-900 shadow-md' : 'text-stone-600'"
+                        >
+                            دفع شهري
+                        </button>
+                        <button
+                            @click="isAnnualPricing = true"
+                            class="px-5 py-2 rounded-xl font-black text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                            :class="isAnnualPricing ? 'bg-red-700 text-white shadow-md' : 'text-stone-600'"
+                        >
+                            <span>دفع سنوي</span>
+                            <span class="px-2 py-0.5 text-[9px] font-black rounded-full" :class="isAnnualPricing ? 'bg-white text-red-800' : 'bg-red-100 text-red-700'">
+                                خصم حتى 40%
+                            </span>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                    <!-- Basic Plan -->
-                    <div class="relative bg-white rounded-2xl p-8 border border-stone-200 hover:border-stone-300 transition-all duration-300 hover:shadow-lg">
-                        <h3 class="text-lg font-semibold text-stone-500 mb-2">الأساسية</h3>
-                        <div class="flex items-baseline gap-1 mb-6">
-                            <span class="text-4xl font-black text-stone-900">199</span>
-                            <span class="text-stone-400">ر.س / شهرياً</span>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto items-stretch">
+                    <!-- Free Plan -->
+                    <div class="relative bg-white rounded-3xl p-8 border border-stone-200 hover:border-stone-300 transition-all duration-300 hover:shadow-lg flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xl font-black text-stone-900 mb-1">المجانية</h3>
+                            <p class="text-xs font-semibold text-stone-400 mb-6">للتجربة والأعمال البسيطة</p>
+                            <div class="flex items-baseline gap-1 mb-6 p-4 rounded-2xl bg-stone-50 border border-stone-100">
+                                <span class="text-4xl font-black text-stone-900">0</span>
+                                <span class="text-xs font-bold text-stone-400">ج.م / {{ isAnnualPricing ? 'سنوياً' : 'شهرياً' }}</span>
+                            </div>
+                            <ul class="space-y-3 mb-8 text-xs font-bold text-stone-700">
+                                <li class="flex items-center gap-3">
+                                    <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    1 مستخدم (محامي واحد)
+                                </li>
+                                <li class="flex items-center gap-3">
+                                    <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    10 موكلين
+                                </li>
+                                <li class="flex items-center gap-3 text-stone-400 opacity-60 line-through">
+                                    <svg class="w-5 h-5 text-stone-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    غير شاملة الفوترة والأتعاب
+                                </li>
+                                <li class="flex items-center gap-3 text-stone-400 opacity-60 line-through">
+                                    <svg class="w-5 h-5 text-stone-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    غير شاملة المصروفات
+                                </li>
+                            </ul>
                         </div>
-                        <ul class="space-y-3 mb-8">
-                            <li class="flex items-center gap-3 text-stone-600">
-                                <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                حتى 50 قضية
-                            </li>
-                            <li class="flex items-center gap-3 text-stone-600">
-                                <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                3 مستخدمين
-                            </li>
-                            <li class="flex items-center gap-3 text-stone-600">
-                                <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                بوابة الموكلين
-                            </li>
-                        </ul>
-                        <a href="#contact" class="block w-full text-center px-6 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold rounded-xl transition-colors duration-300">
-                            ابدأ الآن
-                        </a>
+                        <Link href="/register" class="block w-full text-center px-6 py-3.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-black rounded-xl text-xs transition">
+                            ابدأ مجاناً
+                        </Link>
                     </div>
 
                     <!-- Pro Plan -->
-                    <div class="relative bg-white rounded-2xl p-8 border-2 border-red-700 hover:shadow-xl transition-all duration-300 scale-[1.02]">
-                        <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-red-700 text-white text-sm font-bold rounded-full">
-                            الأكثر طلباً
+                    <div class="relative bg-white rounded-3xl p-8 border-2 border-red-700 hover:shadow-2xl transition-all duration-300 scale-105 flex flex-col justify-between">
+                        <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-red-700 text-white text-xs font-black rounded-full shadow-md">
+                            الأكثر طلباً 🚀
                         </div>
-                        <h3 class="text-lg font-semibold text-red-700 mb-2">الاحترافية</h3>
-                        <div class="flex items-baseline gap-1 mb-6">
-                            <span class="text-4xl font-black text-stone-900">499</span>
-                            <span class="text-stone-400">ر.س / شهرياً</span>
+                        <div>
+                            <h3 class="text-xl font-black text-stone-900 mb-1">الاحترافية</h3>
+                            <p class="text-xs font-semibold text-stone-400 mb-6">للمكاتب المتنامية</p>
+                            <div class="mb-6 p-4 rounded-2xl bg-stone-50 border border-stone-100">
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-4xl font-black text-stone-900">{{ isAnnualPricing ? '5,000' : '650' }}</span>
+                                    <span class="text-xs font-bold text-stone-500">ج.م / {{ isAnnualPricing ? 'سنوياً' : 'شهرياً' }}</span>
+                                </div>
+                                <span v-if="isAnnualPricing" class="text-[10px] font-bold text-emerald-700 block mt-1">توفير 2,800 ج.م سنوياً</span>
+                            </div>
+                            <ul class="space-y-3 mb-8 text-xs font-bold text-stone-700">
+                                <li class="flex items-center gap-3">
+                                    <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    5 مستخدمين
+                                </li>
+                                <li class="flex items-center gap-3">
+                                    <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    100 موكل
+                                </li>
+                                <li class="flex items-center gap-3">
+                                    <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    إدارة الفوترة والأتعاب
+                                </li>
+                                <li class="flex items-center gap-3">
+                                    <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    تسجيل وتتبع المصروفات
+                                </li>
+                            </ul>
                         </div>
-                        <ul class="space-y-3 mb-8">
-                            <li class="flex items-center gap-3 text-stone-700">
-                                <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                قضايا غير محدودة
-                            </li>
-                            <li class="flex items-center gap-3 text-stone-700">
-                                <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                10 مستخدمين
-                            </li>
-                            <li class="flex items-center gap-3 text-stone-700">
-                                <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                بوابة الموكلين + المالية
-                            </li>
-                            <li class="flex items-center gap-3 text-stone-700">
-                                <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                التقارير المتقدمة
-                            </li>
-                        </ul>
-                        <a href="#contact" class="block w-full text-center px-6 py-3 bg-red-700 hover:bg-red-800 text-white font-bold rounded-xl shadow-lg shadow-red-700/15 transition-colors duration-300">
-                            ابدأ الآن
-                        </a>
+                        <Link href="/register" class="block w-full text-center px-6 py-3.5 bg-red-700 hover:bg-red-800 text-white font-black rounded-xl text-xs shadow-lg shadow-red-700/20 transition">
+                            اشترك الآن
+                        </Link>
                     </div>
 
                     <!-- Enterprise Plan -->
-                    <div class="relative bg-white rounded-2xl p-8 border border-stone-200 hover:border-stone-300 transition-all duration-300 hover:shadow-lg">
-                        <h3 class="text-lg font-semibold text-stone-500 mb-2">المؤسسات</h3>
-                        <div class="flex items-baseline gap-1 mb-6">
-                            <span class="text-4xl font-black text-stone-900">مخصص</span>
+                    <div class="relative bg-white rounded-3xl p-8 border border-stone-200 hover:border-stone-300 transition-all duration-300 hover:shadow-lg flex flex-col justify-between">
+                        <div>
+                            <h3 class="text-xl font-black text-stone-900 mb-1">المؤسسات</h3>
+                            <p class="text-xs font-semibold text-stone-400 mb-6">للمكاتب والشركات الكبيرة</p>
+                            <div class="mb-6 p-4 rounded-2xl bg-stone-50 border border-stone-100">
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-4xl font-black text-stone-900">{{ isAnnualPricing ? '9,000' : '1,250' }}</span>
+                                    <span class="text-xs font-bold text-stone-500">ج.م / {{ isAnnualPricing ? 'سنوياً' : 'شهرياً' }}</span>
+                                </div>
+                                <span v-if="isAnnualPricing" class="text-[10px] font-bold text-emerald-700 block mt-1">توفير 6,000 ج.م سنوياً</span>
+                            </div>
+                            <ul class="space-y-3 mb-8 text-xs font-bold text-stone-700">
+                                <li class="flex items-center gap-3">
+                                    <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    25 مستخدم
+                                </li>
+                                <li class="flex items-center gap-3">
+                                    <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    1,000 موكل
+                                </li>
+                                <li class="flex items-center gap-3">
+                                    <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    إدارة الفوترة والأتعاب
+                                </li>
+                                <li class="flex items-center gap-3">
+                                    <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    تسجيل وتتبع المصروفات
+                                </li>
+                                <li class="flex items-center gap-3 text-red-700 font-black">
+                                    <svg class="w-5 h-5 text-red-700 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    دعم فني متواصل 24/7
+                                </li>
+                            </ul>
                         </div>
-                        <ul class="space-y-3 mb-8">
-                            <li class="flex items-center gap-3 text-stone-600">
-                                <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                كل مميزات الاحترافية
-                            </li>
-                            <li class="flex items-center gap-3 text-stone-600">
-                                <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                مستخدمين غير محدودين
-                            </li>
-                            <li class="flex items-center gap-3 text-stone-600">
-                                <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                سيرفر مخصص
-                            </li>
-                            <li class="flex items-center gap-3 text-stone-600">
-                                <svg class="w-5 h-5 text-red-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                دعم فني مميز 24/7
-                            </li>
-                        </ul>
-                        <a href="#contact" class="block w-full text-center px-6 py-3 bg-stone-100 hover:bg-stone-200 text-stone-700 font-semibold rounded-xl transition-colors duration-300">
-                            تواصل معنا
-                        </a>
+                        <Link href="/register" class="block w-full text-center px-6 py-3.5 bg-stone-900 hover:bg-stone-800 text-white font-black rounded-xl text-xs shadow-md transition">
+                            اشترك الآن
+                        </Link>
                     </div>
                 </div>
             </div>
