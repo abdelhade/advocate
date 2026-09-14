@@ -26,10 +26,26 @@ use Illuminate\Support\Facades\Cache;
 // Central / Home Routes
 Route::get('/', function () {
     $data = Cache::remember('central_welcome_stats', 3600, function () {
-        $tenantCount = \App\Models\Tenant::count();
-        $clientCount = \App\Models\Client::withoutGlobalScopes()->count();
-        $caseCount = \App\Models\LegalCase::withoutGlobalScopes()->count();
-        $invoiceCount = \App\Models\Invoice::withoutGlobalScopes()->count();
+        $getFastCount = function (string $tableName, callable $fallbackCount) {
+            try {
+                $dbName = config('database.connections.mysql.database');
+                $row = \Illuminate\Support\Facades\DB::selectOne(
+                    "SELECT table_rows FROM information_schema.tables WHERE table_schema = ? AND table_name = ?",
+                    [$dbName, $tableName]
+                );
+                if ($row && isset($row->table_rows) && (int) $row->table_rows > 0) {
+                    return (int) $row->table_rows;
+                }
+            } catch (\Throwable $e) {
+                // Ignore and use fallback
+            }
+            return $fallbackCount();
+        };
+
+        $tenantCount = $getFastCount('tenants', fn () => \App\Models\Tenant::count());
+        $clientCount = $getFastCount('clients', fn () => \App\Models\Client::withoutGlobalScopes()->count());
+        $caseCount = $getFastCount('legal_cases', fn () => \App\Models\LegalCase::withoutGlobalScopes()->count());
+        $invoiceCount = $getFastCount('invoices', fn () => \App\Models\Invoice::withoutGlobalScopes()->count());
 
         $formatNumber = function ($number) {
             if ($number >= 1000000) {
