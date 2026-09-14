@@ -21,11 +21,11 @@ onMounted(() => {
 
 // Interactive Grid Demo Data (AG Grid style live interactive component)
 const demoCases = ref([
-    { id: 'CASE-2026-901', title: 'شركة الأفق ضد المؤسسة الوطنية', client: 'شركة الأفق القابضة', court: 'محكمة الاستئناف التجاري - الرياض', date: '2026-09-18', status: 'جلسة قادمة', statusClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30', amount: '150,000 ر.س' },
-    { id: 'CASE-2026-842', title: 'دعوى تعويض عقاري رقم 402', client: 'د. خالد بن عبدالمحسن', court: 'المحكمة العامة - جدة', date: '2026-09-22', status: 'قيد النظر', statusClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30', amount: '85,000 ر.س' },
-    { id: 'CASE-2026-731', title: 'منازعة تنفيذية رقم 119', client: 'مجموعة المدى للمقاولات', court: 'محكمة التنفيذ - الدمام', date: '2026-09-15', status: 'مستعجل', statusClass: 'bg-red-500/10 text-red-400 border-red-500/30', amount: '320,000 ر.س' },
-    { id: 'CASE-2026-610', title: 'إثبات ملكية وعقد تمليك', client: 'الشيخ عبدالمجيد منصور', court: 'محكمة الأحوال - المدينة', date: '2026-10-05', status: 'محجوزة للحكم', statusClass: 'bg-blue-500/10 text-blue-400 border-blue-500/30', amount: '45,000 ر.س' },
-    { id: 'CASE-2026-509', title: 'تحصيل مستحقات توريد', client: 'مصنع الشرق للأغذية', court: 'المحكمة التجارية - الخبر', date: '2026-10-12', status: 'قيد النظر', statusClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30', amount: '210,000 ر.س' },
+    { id: 'CASE-2026-901', title: 'شركة الأفق ضد المؤسسة الوطنية', client: 'شركة الأفق القابضة', court: 'محكمة الاستئناف التجاري - الرياض', date: '2026-09-18', status: 'جلسة قادمة', statusClass: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30', amount: '150,000 ' },
+    { id: 'CASE-2026-842', title: 'دعوى تعويض عقاري رقم 402', client: 'د. خالد بن عبدالمحسن', court: 'المحكمة العامة - جدة', date: '2026-09-22', status: 'قيد النظر', statusClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30', amount: '85,000 ' },
+    { id: 'CASE-2026-731', title: 'منازعة تنفيذية رقم 119', client: 'مجموعة المدى للمقاولات', court: 'محكمة التنفيذ - الدمام', date: '2026-09-15', status: 'مستعجل', statusClass: 'bg-red-500/10 text-red-400 border-red-500/30', amount: '320,000 ' },
+    { id: 'CASE-2026-610', title: 'إثبات ملكية وعقد تمليك', client: 'الشيخ عبدالمجيد منصور', court: 'محكمة الأحوال - المدينة', date: '2026-10-05', status: 'محجوزة للحكم', statusClass: 'bg-blue-500/10 text-blue-400 border-blue-500/30', amount: '45,000 ' },
+    { id: 'CASE-2026-509', title: 'تحصيل مستحقات توريد', client: 'مصنع الشرق للأغذية', court: 'المحكمة التجارية - الخبر', date: '2026-10-12', status: 'قيد النظر', statusClass: 'bg-amber-500/10 text-amber-400 border-amber-500/30', amount: '210,000 ' },
 ]);
 
 const filteredCases = computed(() => {

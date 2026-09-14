@@ -75,7 +75,7 @@ const methodLabels = {
                 <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-xl font-bold">💰</div>
                 <div>
                     <p class="text-xs font-bold text-stone-400">إجمالي المقبوضات المحصلة</p>
-                    <p class="text-xl font-black text-emerald-700 mt-1">{{ Number(stats.total_collected).toLocaleString() }} <span class="text-xs font-normal">ر.س</span></p>
+                    <p class="text-xl font-black text-emerald-700 mt-1">{{ Number(stats.total_collected).toLocaleString() }} <span class="text-xs font-normal"></span></p>
                 </div>
             </div>
             <div class="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-sm flex items-center gap-4">
@@ -114,7 +114,7 @@ const methodLabels = {
                                     {{ methodLabels[p.payment_method] || p.payment_method }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 font-black text-emerald-700">+ {{ Number(p.amount).toLocaleString() }} ر.س</td>
+                            <td class="px-6 py-4 font-black text-emerald-700">+ {{ Number(p.amount).toLocaleString() }} </td>
                             <td class="px-6 py-4 text-xs text-stone-500">{{ new Date(p.payment_date).toLocaleDateString('ar-EG') }}</td>
                             <td class="px-6 py-4 text-center">
                                 <button @click="deletePayment(p)" class="p-1.5 text-stone-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors">
@@ -166,7 +166,7 @@ const methodLabels = {
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-stone-700 mb-1.5">المبلغ المقبوض (ر.س) *</label>
+                            <label class="block text-xs font-bold text-stone-700 mb-1.5">المبلغ المقبوض () *</label>
                             <input v-model.number="form.amount" type="number" step="0.01" min="0.01" required class="w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-stone-50 text-sm font-black text-emerald-700" />
                         </div>
                         <div>

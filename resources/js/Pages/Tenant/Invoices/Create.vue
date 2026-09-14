@@ -118,7 +118,7 @@ const submit = () => {
                             <input v-model.number="item.unit_price" type="number" step="0.01" min="0" required placeholder="السعر" class="w-full px-3 py-2 rounded-lg border border-stone-200 bg-white text-sm text-left font-bold" />
                         </div>
                         <div class="w-full sm:w-32 text-left font-black text-stone-800 text-sm">
-                            {{ (Number(item.quantity || 0) * Number(item.unit_price || 0)).toLocaleString() }} ر.س
+                            {{ (Number(item.quantity || 0) * Number(item.unit_price || 0)).toLocaleString() }} 
                         </div>
                         <button type="button" @click="removeItem(idx)" class="p-2 text-stone-400 hover:text-rose-600">✕</button>
                     </div>
@@ -131,16 +131,16 @@ const submit = () => {
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-xs font-bold text-stone-700 mb-1.5">مبلغ الخصم (ر.س)</label>
+                        <label class="block text-xs font-bold text-stone-700 mb-1.5">مبلغ الخصم ()</label>
                         <input v-model.number="form.discount_amount" type="number" step="0.01" min="0" class="w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-stone-50 text-sm font-bold" />
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-stone-700 mb-1.5">مبلغ الضريبة (ر.س)</label>
+                        <label class="block text-xs font-bold text-stone-700 mb-1.5">مبلغ الضريبة ()</label>
                         <input v-model.number="form.tax_amount" type="number" step="0.01" min="0" class="w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-stone-50 text-sm font-bold" />
                     </div>
                     <div class="bg-stone-50 p-4 rounded-xl border border-stone-200 text-left flex flex-col justify-center">
                         <span class="text-xs text-stone-500 font-bold block">المجموع النهائي الفعلي</span>
-                        <span class="text-2xl font-black text-blue-700 mt-1">{{ totalAmount.toLocaleString() }} <span class="text-xs font-normal">ر.س</span></span>
+                        <span class="text-2xl font-black text-blue-700 mt-1">{{ totalAmount.toLocaleString() }} <span class="text-xs font-normal"></span></span>
                     </div>
                 </div>
 

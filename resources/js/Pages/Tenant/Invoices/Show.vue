@@ -87,8 +87,8 @@ const statusLabels = {
                         <td class="px-4 py-3 text-stone-400 font-bold">{{ index + 1 }}</td>
                         <td class="px-4 py-3 font-bold text-stone-800">{{ item.description }}</td>
                         <td class="px-4 py-3 text-center font-bold">{{ item.quantity }}</td>
-                        <td class="px-4 py-3 text-left font-bold">{{ Number(item.unit_price).toLocaleString() }} ر.س</td>
-                        <td class="px-4 py-3 text-left font-black text-stone-900">{{ Number(item.total_price).toLocaleString() }} ر.س</td>
+                        <td class="px-4 py-3 text-left font-bold">{{ Number(item.unit_price).toLocaleString() }} </td>
+                        <td class="px-4 py-3 text-left font-black text-stone-900">{{ Number(item.total_price).toLocaleString() }} </td>
                     </tr>
                 </tbody>
             </table>
@@ -98,27 +98,27 @@ const statusLabels = {
                 <div class="w-72 space-y-2 text-xs font-bold text-stone-600">
                     <div class="flex justify-between py-1 border-b border-stone-100">
                         <span>المجموع الفرعي:</span>
-                        <span class="text-stone-800 font-black">{{ Number(invoice.subtotal).toLocaleString() }} ر.س</span>
+                        <span class="text-stone-800 font-black">{{ Number(invoice.subtotal).toLocaleString() }} </span>
                     </div>
                     <div v-if="Number(invoice.discount_amount) > 0" class="flex justify-between py-1 border-b border-stone-100 text-rose-600">
                         <span>الخصم:</span>
-                        <span>- {{ Number(invoice.discount_amount).toLocaleString() }} ر.س</span>
+                        <span>- {{ Number(invoice.discount_amount).toLocaleString() }} </span>
                     </div>
                     <div v-if="Number(invoice.tax_amount) > 0" class="flex justify-between py-1 border-b border-stone-100">
                         <span>الضريبة:</span>
-                        <span class="text-stone-800 font-black">+ {{ Number(invoice.tax_amount).toLocaleString() }} ر.س</span>
+                        <span class="text-stone-800 font-black">+ {{ Number(invoice.tax_amount).toLocaleString() }} </span>
                     </div>
                     <div class="flex justify-between py-2 text-base font-black text-blue-700 border-b-2 border-blue-700">
                         <span>إجمالي الفاتورة:</span>
-                        <span>{{ Number(invoice.total_amount).toLocaleString() }} ر.س</span>
+                        <span>{{ Number(invoice.total_amount).toLocaleString() }} </span>
                     </div>
                     <div class="flex justify-between py-1 text-emerald-700 font-bold">
                         <span>المبلغ المسدد:</span>
-                        <span>{{ Number(invoice.paid_amount).toLocaleString() }} ر.س</span>
+                        <span>{{ Number(invoice.paid_amount).toLocaleString() }} </span>
                     </div>
                     <div class="flex justify-between py-1 text-amber-700 font-black text-sm">
                         <span>المتبقي للسداد:</span>
-                        <span>{{ (Number(invoice.total_amount) - Number(invoice.paid_amount)).toLocaleString() }} ر.س</span>
+                        <span>{{ (Number(invoice.total_amount) - Number(invoice.paid_amount)).toLocaleString() }} </span>
                     </div>
                 </div>
             </div>
@@ -130,7 +130,7 @@ const statusLabels = {
                     <div v-for="p in invoice.payments" :key="p.id" class="flex justify-between items-center bg-stone-50 px-4 py-2.5 rounded-xl border border-stone-200 text-xs">
                         <span class="font-bold text-stone-800">سند قبض رقم: {{ p.payment_number }} ({{ p.payment_method }})</span>
                         <span class="text-stone-500">{{ new Date(p.payment_date).toLocaleDateString('ar-EG') }}</span>
-                        <span class="font-black text-emerald-700">+ {{ Number(p.amount).toLocaleString() }} ر.س</span>
+                        <span class="font-black text-emerald-700">+ {{ Number(p.amount).toLocaleString() }} </span>
                     </div>
                 </div>
             </div>

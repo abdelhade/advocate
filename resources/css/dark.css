@@ -1,0 +1,123 @@
+/* ==========================================================================
+   JALSAT SYSTEM DARK MODE STYLESHEET (DARK THEME & AG GRID TECH STYLES)
+   ========================================================================== */
+
+:root.dark, body.dark, .dark-theme {
+  --bg-app: #020617;          /* slate-950 */
+  --bg-surface: #0f172a;      /* slate-900 */
+  --bg-subtle: #1e293b;       /* slate-800 */
+  --border-subtle: #1e293b;
+
+  --text-main: #f8fafc;        /* slate-50 */
+  --text-muted: #94a3b8;       /* slate-400 */
+  --text-light: #64748b;       /* slate-500 */
+
+  --color-primary: #dc2626;       /* red-600 */
+  --color-primary-hover: #b91c1c; /* red-700 */
+  --color-primary-light: rgba(220, 38, 38, 0.1);
+  --color-primary-border: rgba(220, 38, 38, 0.25);
+}
+
+/* Dark Mode Global Overrides */
+.dark-mode-app, body.dark {
+  background-color: #020617 !important;
+  color: #f8fafc !important;
+}
+
+/* Dark Custom Scrollbars */
+.dark-theme ::-webkit-scrollbar,
+body.dark ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.dark-theme ::-webkit-scrollbar-track,
+body.dark ::-webkit-scrollbar-track {
+  background: #090d16;
+}
+.dark-theme ::-webkit-scrollbar-thumb,
+body.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+.dark-theme ::-webkit-scrollbar-thumb:hover,
+body.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Dark Tech Component Utilities */
+.dark-glass-nav {
+  background-color: rgba(2, 6, 23, 0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(30, 41, 59, 0.8);
+}
+
+.dark-tech-card {
+  background-color: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(30, 41, 59, 0.8);
+  border-radius: 1.5rem;
+  backdrop-filter: blur(16px);
+  box-shadow: 0 25px 50px -12px rgba(2, 6, 23, 0.8);
+}
+
+.dark-tech-card:hover {
+  border-color: rgba(220, 38, 38, 0.35);
+}
+
+/* AG Grid Dark Table Styling */
+.dark-grid-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: #e2e8f0;
+}
+
+.dark-grid-table th {
+  background-color: rgba(2, 6, 23, 0.6);
+  color: #94a3b8;
+  font-weight: 700;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid #1e293b;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.dark-grid-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+  font-size: 0.8125rem;
+}
+
+.dark-grid-table tr:hover td {
+  background-color: rgba(30, 41, 59, 0.4);
+}
+
+/* Glowing Accent Highlights */
+.glow-red-ambient {
+  box-shadow: 0 0 50px -10px rgba(220, 38, 38, 0.25);
+}
+
+.glow-red-text {
+  text-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+}
+
+.dark-badge-red {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+
+.dark-input-field {
+  background-color: #0f172a;
+  border: 1px solid #1e293b;
+  color: #f8fafc;
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.875rem;
+  font-size: 0.875rem;
+}
+
+.dark-input-field:focus {
+  outline: none;
+  border-color: #dc2626;
+  box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+}

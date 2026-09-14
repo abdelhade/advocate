@@ -68,7 +68,7 @@ const deleteExpense = (exp) => {
             <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center text-xl font-bold">💸</div>
             <div>
                 <p class="text-xs font-bold text-stone-400">إجمالي المصروفات المسجلة</p>
-                <p class="text-2xl font-black text-rose-700 mt-1">{{ Number(totalExpenses).toLocaleString() }} <span class="text-xs font-normal">ر.س</span></p>
+                <p class="text-2xl font-black text-rose-700 mt-1">{{ Number(totalExpenses).toLocaleString() }} <span class="text-xs font-normal"></span></p>
             </div>
         </div>
 
@@ -92,7 +92,7 @@ const deleteExpense = (exp) => {
                             <td class="px-6 py-4 text-stone-500 font-bold">
                                 {{ exp.case ? `${exp.case.title} (${exp.case.case_number})` : 'مصروف عام للمكتب' }}
                             </td>
-                            <td class="px-6 py-4 font-black text-rose-700">- {{ Number(exp.amount).toLocaleString() }} ر.س</td>
+                            <td class="px-6 py-4 font-black text-rose-700">- {{ Number(exp.amount).toLocaleString() }} </td>
                             <td class="px-6 py-4 text-xs font-bold text-stone-600">{{ exp.paid_by?.name || 'غير محدد' }}</td>
                             <td class="px-6 py-4 text-xs text-stone-500">{{ new Date(exp.expense_date).toLocaleDateString('ar-EG') }}</td>
                             <td class="px-6 py-4 text-center">
@@ -128,7 +128,7 @@ const deleteExpense = (exp) => {
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-stone-700 mb-1.5">المبلغ (ر.س) *</label>
+                        <label class="block text-xs font-bold text-stone-700 mb-1.5">المبلغ () *</label>
                         <input v-model.number="form.amount" type="number" step="0.01" min="0.01" required class="w-full px-4 py-2.5 rounded-xl border border-stone-200 bg-stone-50 text-sm font-black text-rose-700" />
                     </div>
 

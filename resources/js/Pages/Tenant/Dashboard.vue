@@ -115,23 +115,23 @@ defineProps({
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 text-center">
                 <div class="bg-stone-50 p-4 rounded-xl border border-stone-200/60">
                     <p class="text-xs font-bold text-stone-500">إجمالي المطلوب</p>
-                    <p class="text-lg font-black text-stone-800 mt-1">{{ Number(stats.total_invoiced).toLocaleString() }} <span class="text-xs font-normal">ر.س</span></p>
+                    <p class="text-lg font-black text-stone-800 mt-1">{{ Number(stats.total_invoiced).toLocaleString() }} <span class="text-xs font-normal"></span></p>
                 </div>
                 <div class="bg-emerald-50/60 p-4 rounded-xl border border-emerald-100">
                     <p class="text-xs font-bold text-emerald-800">المقبوضات المحصلة</p>
-                    <p class="text-lg font-black text-emerald-700 mt-1">+ {{ Number(stats.total_collected).toLocaleString() }} <span class="text-xs font-normal">ر.س</span></p>
+                    <p class="text-lg font-black text-emerald-700 mt-1">+ {{ Number(stats.total_collected).toLocaleString() }} <span class="text-xs font-normal"></span></p>
                 </div>
                 <div class="bg-amber-50/60 p-4 rounded-xl border border-amber-100">
                     <p class="text-xs font-bold text-amber-800">المتبقي غير المحصل</p>
-                    <p class="text-lg font-black text-amber-700 mt-1">{{ Number(stats.total_unpaid).toLocaleString() }} <span class="text-xs font-normal">ر.س</span></p>
+                    <p class="text-lg font-black text-amber-700 mt-1">{{ Number(stats.total_unpaid).toLocaleString() }} <span class="text-xs font-normal"></span></p>
                 </div>
                 <div class="bg-rose-50/60 p-4 rounded-xl border border-rose-100">
                     <p class="text-xs font-bold text-rose-800">إجمالي المصروفات</p>
-                    <p class="text-lg font-black text-rose-700 mt-1">- {{ Number(stats.total_expenses).toLocaleString() }} <span class="text-xs font-normal">ر.س</span></p>
+                    <p class="text-lg font-black text-rose-700 mt-1">- {{ Number(stats.total_expenses).toLocaleString() }} <span class="text-xs font-normal"></span></p>
                 </div>
                 <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
                     <p class="text-xs font-bold text-blue-800">صافي التدفق المالي</p>
-                    <p class="text-lg font-black text-blue-700 mt-1">{{ Number(stats.net_revenue).toLocaleString() }} <span class="text-xs font-normal">ر.س</span></p>
+                    <p class="text-lg font-black text-blue-700 mt-1">{{ Number(stats.net_revenue).toLocaleString() }} <span class="text-xs font-normal"></span></p>
                 </div>
             </div>
         </div>

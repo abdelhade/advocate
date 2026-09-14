@@ -46,21 +46,21 @@ const deleteInvoice = (invoice) => {
                 <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center text-xl font-bold">💳</div>
                 <div>
                     <p class="text-xs font-bold text-stone-400">إجمالي الفواتير الصادرة</p>
-                    <p class="text-xl font-black text-stone-800 mt-1">{{ Number(stats.total_invoiced).toLocaleString() }} <span class="text-xs font-normal">ر.س</span></p>
+                    <p class="text-xl font-black text-stone-800 mt-1">{{ Number(stats.total_invoiced).toLocaleString() }} <span class="text-xs font-normal"></span></p>
                 </div>
             </div>
             <div class="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-sm flex items-center gap-4">
                 <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-xl font-bold">✅</div>
                 <div>
                     <p class="text-xs font-bold text-stone-400">المبالغ المحصّلة</p>
-                    <p class="text-xl font-black text-emerald-700 mt-1">{{ Number(stats.total_paid).toLocaleString() }} <span class="text-xs font-normal">ر.س</span></p>
+                    <p class="text-xl font-black text-emerald-700 mt-1">{{ Number(stats.total_paid).toLocaleString() }} <span class="text-xs font-normal"></span></p>
                 </div>
             </div>
             <div class="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-sm flex items-center gap-4">
                 <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center text-xl font-bold">⏳</div>
                 <div>
                     <p class="text-xs font-bold text-stone-400">المتبقي غير المحصل</p>
-                    <p class="text-xl font-black text-amber-700 mt-1">{{ Number(stats.total_unpaid).toLocaleString() }} <span class="text-xs font-normal">ر.س</span></p>
+                    <p class="text-xl font-black text-amber-700 mt-1">{{ Number(stats.total_unpaid).toLocaleString() }} <span class="text-xs font-normal"></span></p>
                 </div>
             </div>
             <div class="bg-white rounded-2xl p-5 border border-stone-200/80 shadow-sm flex items-center gap-4">
@@ -95,8 +95,8 @@ const deleteInvoice = (invoice) => {
                             </td>
                             <td class="px-6 py-4 font-bold text-stone-800">{{ inv.client?.name }}</td>
                             <td class="px-6 py-4 text-stone-500">{{ inv.case ? `${inv.case.title} (${inv.case.case_number})` : '-' }}</td>
-                            <td class="px-6 py-4 font-black text-stone-800">{{ Number(inv.total_amount).toLocaleString() }} ر.س</td>
-                            <td class="px-6 py-4 font-bold text-emerald-700">{{ Number(inv.paid_amount).toLocaleString() }} ر.س</td>
+                            <td class="px-6 py-4 font-black text-stone-800">{{ Number(inv.total_amount).toLocaleString() }} </td>
+                            <td class="px-6 py-4 font-bold text-emerald-700">{{ Number(inv.paid_amount).toLocaleString() }} </td>
                             <td class="px-6 py-4">
                                 <span :class="['px-3 py-1 text-xs font-bold rounded-lg border', statusLabels[inv.status]?.class]">
                                     {{ statusLabels[inv.status]?.text }}
