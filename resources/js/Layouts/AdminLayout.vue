@@ -51,7 +51,7 @@ const isActive = (item) => {
 };
 
 const logout = () => {
-    router.post(route('admin.logout'));
+    router.post('/admin/logout');
 };
 
 const flash = computed(() => page.props.flash || {});

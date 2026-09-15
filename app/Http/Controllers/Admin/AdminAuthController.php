@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 class AdminAuthController extends Controller
@@ -28,15 +29,15 @@ class AdminAuthController extends Controller
             'password.required' => 'كلمة المرور مطلوبة.',
         ]);
 
-        if (Auth::guard('admin')->attempt($credentials, $request->boolean('remember'))) {
-            $request->session()->regenerate();
-
-            return redirect()->intended('/admin/dashboard');
+        if (! Auth::guard('admin')->attempt($credentials, $request->boolean('remember'))) {
+            throw ValidationException::withMessages([
+                'username' => 'بيانات الدخول غير صحيحة.',
+            ]);
         }
 
-        return back()->withErrors([
-            'username' => 'بيانات الدخول غير صحيحة.',
-        ])->onlyInput('username');
+        $request->session()->regenerate();
+
+        return redirect()->intended('/admin/dashboard');
     }
 
     public function logout(Request $request)
