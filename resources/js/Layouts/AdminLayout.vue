@@ -8,25 +8,19 @@ const admin = computed(() => page.props.auth?.user || page.props.auth?.admin || 
 const sidebarOpen = ref(false);
 const isDarkMode = ref(false);
 
+const applyTheme = (dark) => {
+    isDarkMode.value = dark;
+    document.documentElement.classList.toggle('dark', dark);
+    document.body.classList.toggle('dark', dark);
+    localStorage.setItem('theme', dark ? 'dark' : 'light');
+};
+
 const toggleTheme = () => {
-    isDarkMode.value = !isDarkMode.value;
-    if (isDarkMode.value) {
-        document.documentElement.classList.add('dark');
-        document.body.classList.add('dark');
-        localStorage.setItem('theme', 'dark');
-    } else {
-        document.documentElement.classList.remove('dark');
-        document.body.classList.remove('dark');
-        localStorage.setItem('theme', 'light');
-    }
+    applyTheme(!isDarkMode.value);
 };
 
 onMounted(() => {
-    isDarkMode.value = localStorage.getItem('theme') === 'dark';
-    if (isDarkMode.value) {
-        document.documentElement.classList.add('dark');
-        document.body.classList.add('dark');
-    }
+    applyTheme(localStorage.getItem('theme') === 'dark');
 });
 
 const navigation = [
@@ -64,7 +58,7 @@ const flash = computed(() => page.props.flash || {});
 </script>
 
 <template>
-    <div class="min-h-screen bg-stone-50 font-sans">
+    <div class="min-h-screen bg-stone-50 font-sans dark:bg-slate-950 transition-colors duration-300">
         <!-- Mobile Sidebar Overlay -->
         <Transition
             enter-active-class="transition-opacity duration-300"
@@ -83,29 +77,29 @@ const flash = computed(() => page.props.flash || {});
 
         <!-- Sidebar -->
         <aside
-            class="fixed top-0 right-0 z-50 w-[270px] h-full bg-white border-l border-stone-200/80 transform transition-transform duration-300 ease-out lg:translate-x-0 shadow-xl lg:shadow-none"
+            class="fixed top-0 right-0 z-50 w-[270px] h-full bg-white dark:bg-slate-900 border-l border-stone-200/80 dark:border-slate-800 transform transition-transform duration-300 ease-out lg:translate-x-0 shadow-xl lg:shadow-none"
             :class="sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'"
         >
             <!-- Logo -->
-            <div class="h-[72px] flex items-center gap-3 px-6 border-b border-stone-100">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-white flex-shrink-0 shadow-lg shadow-red-200">
+            <div class="h-[72px] flex items-center gap-3 px-6 border-b border-stone-100 dark:border-slate-800">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center text-white flex-shrink-0 shadow-lg shadow-red-200 dark:shadow-red-950/40">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
                 </div>
                 <div>
-                    <span class="text-lg font-black text-stone-800">جلسات</span>
-                    <span class="block text-[10px] text-stone-400 font-medium -mt-0.5">لوحة الإدارة</span>
+                    <span class="text-lg font-black text-stone-800 dark:text-slate-100">جلسات</span>
+                    <span class="block text-[10px] text-stone-400 dark:text-slate-500 font-medium -mt-0.5">لوحة الإدارة</span>
                 </div>
             </div>
 
             <!-- Navigation -->
             <nav class="p-4 space-y-1">
-                <p class="text-[10px] font-bold text-stone-400 uppercase tracking-widest px-4 mb-3">القائمة الرئيسية</p>
+                <p class="text-[10px] font-bold text-stone-400 dark:text-slate-500 uppercase tracking-widest px-4 mb-3">القائمة الرئيسية</p>
                 <Link
                     v-for="item in navigation"
                     :key="item.route"
                     :href="route(item.route)"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 group"
-                    :class="isActive(item) ? 'bg-red-50 text-red-700 border border-red-100 shadow-sm' : 'text-stone-500 hover:bg-stone-50 hover:text-stone-800'"
+                    :class="isActive(item) ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-900/50 shadow-sm' : 'text-stone-500 dark:text-slate-400 hover:bg-stone-50 dark:hover:bg-slate-800 hover:text-stone-800 dark:hover:text-slate-100'"
                 >
                     <svg class="w-5 h-5 flex-shrink-0 transition-transform duration-200 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="item.icon"></path>
@@ -115,21 +109,21 @@ const flash = computed(() => page.props.flash || {});
             </nav>
 
             <!-- Admin Info (bottom) -->
-            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-stone-100 bg-stone-50/50">
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-stone-100 dark:border-slate-800 bg-stone-50/50 dark:bg-slate-950/50">
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-stone-200 to-stone-300 flex items-center justify-center ring-2 ring-white">
-                            <svg class="w-5 h-5 text-stone-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-stone-200 to-stone-300 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center ring-2 ring-white dark:ring-slate-800">
+                            <svg class="w-5 h-5 text-stone-500 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                         </div>
                         <div>
-                            <p class="text-sm font-bold text-stone-800">{{ admin.name }}</p>
-                            <p class="text-[11px] text-stone-400">مدير النظام</p>
+                            <p class="text-sm font-bold text-stone-800 dark:text-slate-100">{{ admin.name }}</p>
+                            <p class="text-[11px] text-stone-400 dark:text-slate-500">مدير النظام</p>
                         </div>
                     </div>
                 </div>
                 <button
                     @click="logout"
-                    class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-700 bg-white hover:bg-red-50 border border-red-100 transition-all duration-200 hover:shadow-sm"
+                    class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-red-700 dark:text-red-400 bg-white dark:bg-slate-900 hover:bg-red-50 dark:hover:bg-red-950/30 border border-red-100 dark:border-red-900/40 transition-all duration-200 hover:shadow-sm"
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     تسجيل الخروج
@@ -140,32 +134,32 @@ const flash = computed(() => page.props.flash || {});
         <!-- Main Content -->
         <div class="lg:mr-[270px]">
             <!-- Top Bar -->
-            <header class="h-[72px] bg-white/80 backdrop-blur-lg border-b border-stone-200/60 flex items-center justify-between px-6 sticky top-0 z-30">
+            <header class="h-[72px] bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-b border-stone-200/60 dark:border-slate-800 flex items-center justify-between px-6 sticky top-0 z-30">
                 <!-- Mobile Menu Button -->
                 <button
                     @click="sidebarOpen = !sidebarOpen"
-                    class="lg:hidden p-2.5 rounded-xl text-stone-500 hover:bg-stone-100 transition-colors"
+                    class="lg:hidden p-2.5 rounded-xl text-stone-500 dark:text-slate-400 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors"
                 >
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                 </button>
 
                 <!-- Page Title -->
-                <h1 class="text-lg font-black text-stone-800">
+                <h1 class="text-lg font-black text-stone-800 dark:text-slate-100">
                     <slot name="title">لوحة التحكم</slot>
                 </h1>
 
                 <div class="flex items-center gap-4">
                     <button
-                        @click="toggleTheme"
+                        @click.stop="toggleTheme"
                         type="button"
-                        class="px-3 py-1.5 rounded-xl text-stone-600 hover:text-stone-900 bg-white hover:bg-stone-50 transition-all flex items-center gap-2 text-xs font-bold border border-stone-200 shadow-sm cursor-pointer"
+                        class="p-2.5 rounded-xl text-stone-600 dark:text-slate-300 hover:text-stone-900 dark:hover:text-white bg-white dark:bg-slate-800 hover:bg-stone-50 dark:hover:bg-slate-700 transition-all flex items-center justify-center border border-stone-200 dark:border-slate-700 shadow-sm cursor-pointer"
                         :title="isDarkMode ? 'التحويل للوضع المضيء' : 'التحويل للوضع الداكن'"
+                        :aria-label="isDarkMode ? 'التحويل للوضع المضيء' : 'التحويل للوضع الداكن'"
                     >
-                        <svg v-if="isDarkMode" class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                        <svg v-else class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                        <span>{{ isDarkMode ? 'مضيء' : 'داكن' }}</span>
+                        <svg v-if="isDarkMode" class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <svg v-else class="w-5 h-5 text-slate-700 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
                     </button>
-                    <a href="/" target="_blank" class="hidden sm:flex items-center gap-2 text-sm text-stone-400 hover:text-red-700 transition-colors px-3 py-2 rounded-lg hover:bg-red-50">
+                    <a href="/" target="_blank" class="hidden sm:flex items-center gap-2 text-sm text-stone-400 dark:text-slate-500 hover:text-red-700 dark:hover:text-red-400 transition-colors px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                         زيارة الموقع
                     </a>

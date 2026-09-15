@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(SubscriptionPlanSeeder::class);
         $this->call(PermissionSeeder::class);
+        $this->call(AdminSeeder::class);
 
         // 1. Create Central Super Admin
         $admin = User::create([

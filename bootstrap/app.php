@@ -16,6 +16,16 @@ return Application::configure(basePath: dirname(__DIR__))
                 config('tenancy.central_domains', ['localhost'])
             )));
 
+            // Named routes keep the LAST registration — bind APP_URL host last
+            // so route()/Ziggy don't resolve to 127.0.0.1 in production.
+            $appHost = strtolower((string) (parse_url((string) config('app.url'), PHP_URL_HOST) ?: ''));
+            if ($appHost !== '') {
+                $centralDomains = array_values(array_unique([
+                    ...array_filter($centralDomains, fn (string $d) => strtolower($d) !== $appHost),
+                    $appHost,
+                ]));
+            }
+
             foreach ($centralDomains as $domain) {
                 Route::middleware('web')
                     ->domain($domain)
@@ -30,6 +40,10 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(prepend: [
+            \App\Http\Middleware\ForceRequestRootUrl::class,
+        ]);
+
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,

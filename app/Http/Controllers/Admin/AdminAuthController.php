@@ -12,7 +12,7 @@ class AdminAuthController extends Controller
     public function showLogin()
     {
         if (Auth::guard('admin')->check()) {
-            return redirect()->route('admin.dashboard');
+            return redirect('/admin/dashboard');
         }
 
         return Inertia::render('Admin/Login');
@@ -23,17 +23,20 @@ class AdminAuthController extends Controller
         $credentials = $request->validate([
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
+        ], [
+            'username.required' => 'اسم المستخدم مطلوب.',
+            'password.required' => 'كلمة المرور مطلوبة.',
         ]);
 
         if (Auth::guard('admin')->attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            return redirect()->intended(route('admin.dashboard'));
+            return redirect()->intended('/admin/dashboard');
         }
 
         return back()->withErrors([
             'username' => 'بيانات الدخول غير صحيحة.',
-        ]);
+        ])->onlyInput('username');
     }
 
     public function logout(Request $request)
@@ -43,6 +46,6 @@ class AdminAuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('admin.login');
+        return redirect('/admin/login');
     }
 }

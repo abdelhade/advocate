@@ -11,8 +11,9 @@ class AdminAuthenticated
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::guard('admin')->check()) {
-            return redirect()->route('admin.login');
+        if (! Auth::guard('admin')->check()) {
+            // Relative path — never bounce to APP_URL host (e.g. 127.0.0.1)
+            return redirect('/admin/login');
         }
 
         return $next($request);

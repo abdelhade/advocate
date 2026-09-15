@@ -29,6 +29,13 @@
         @vite(['resources/js/app.js', "resources/js/Pages/{$page['component']}.vue"])
         @inertiaHead
         <script>
+            (function () {
+                try {
+                    if (localStorage.getItem('theme') === 'dark') {
+                        document.documentElement.classList.add('dark');
+                    }
+                } catch (e) {}
+            })();
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
                     navigator.serviceWorker.register('/sw.js').catch((err) => {
@@ -39,6 +46,15 @@
         </script>
     </head>
     <body class="font-sans antialiased">
+        <script>
+            (function () {
+                try {
+                    if (localStorage.getItem('theme') === 'dark') {
+                        document.body.classList.add('dark');
+                    }
+                } catch (e) {}
+            })();
+        </script>
         @inertia
     </body>
 </html>

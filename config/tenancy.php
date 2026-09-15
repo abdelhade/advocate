@@ -16,13 +16,19 @@ return [
      *
      * Only relevant if you're using the domain or subdomain identification middleware.
      */
-    'central_domains' => array_values(array_unique(array_filter([
-        '127.0.0.1',
-        'localhost',
-        'jalsateg.com',
-        'www.jalsateg.com',
-        parse_url(env('APP_URL', ''), PHP_URL_HOST),
-    ]))),
+    'central_domains' => array_values(array_unique(array_filter(array_map(
+        static fn (string $d) => strtolower(trim($d)),
+        explode(',', (string) env(
+            'CENTRAL_DOMAINS',
+            implode(',', array_filter([
+                '127.0.0.1',
+                'localhost',
+                'jalsateg.com',
+                'www.jalsateg.com',
+                parse_url((string) env('APP_URL', ''), PHP_URL_HOST) ?: null,
+            ]))
+        ))
+    )))),
 
     /**
      * Base domain for tenant subdomains: {slug}.{tenant_base_domain}

@@ -19,9 +19,90 @@
 }
 
 /* Dark Mode Global Overrides */
-.dark-mode-app, body.dark {
+.dark-mode-app,
+html.dark,
+html.dark body,
+body.dark {
   background-color: #020617 !important;
   color: #f8fafc !important;
+}
+
+/* Common light surfaces → dark when theme is active */
+html.dark .bg-white,
+body.dark .bg-white {
+  background-color: #0f172a !important;
+}
+
+html.dark .bg-white\/80,
+html.dark .bg-white\/50,
+body.dark .bg-white\/80,
+body.dark .bg-white\/50 {
+  background-color: rgba(15, 23, 42, 0.85) !important;
+}
+
+html.dark .bg-stone-50,
+html.dark .bg-stone-50\/50,
+body.dark .bg-stone-50,
+body.dark .bg-stone-50\/50 {
+  background-color: #020617 !important;
+}
+
+html.dark .bg-stone-100,
+body.dark .bg-stone-100 {
+  background-color: #1e293b !important;
+}
+
+html.dark .border-stone-100,
+html.dark .border-stone-200,
+html.dark .border-stone-200\/80,
+html.dark .border-stone-200\/60,
+html.dark .border-stone-200\/50,
+body.dark .border-stone-100,
+body.dark .border-stone-200,
+body.dark .border-stone-200\/80,
+body.dark .border-stone-200\/60,
+body.dark .border-stone-200\/50 {
+  border-color: #1e293b !important;
+}
+
+html.dark .text-stone-800,
+html.dark .text-stone-900,
+html.dark .text-stone-600,
+body.dark .text-stone-800,
+body.dark .text-stone-900,
+body.dark .text-stone-600 {
+  color: #f1f5f9 !important;
+}
+
+html.dark .text-stone-500,
+html.dark .text-stone-400,
+html.dark .text-stone-300,
+body.dark .text-stone-500,
+body.dark .text-stone-400,
+body.dark .text-stone-300 {
+  color: #94a3b8 !important;
+}
+
+html.dark .hover\:bg-stone-50:hover,
+html.dark .hover\:bg-stone-100:hover,
+body.dark .hover\:bg-stone-50:hover,
+body.dark .hover\:bg-stone-100:hover {
+  background-color: #1e293b !important;
+}
+
+html.dark .hover\:shadow-stone-200\/50:hover,
+body.dark .hover\:shadow-stone-200\/50:hover {
+  --tw-shadow-color: rgba(2, 6, 23, 0.5) !important;
+}
+
+html.dark .from-stone-100,
+body.dark .from-stone-100 {
+  --tw-gradient-from: #1e293b !important;
+}
+
+html.dark .to-stone-200,
+body.dark .to-stone-200 {
+  --tw-gradient-to: #334155 !important;
 }
 
 /* Dark Custom Scrollbars */
