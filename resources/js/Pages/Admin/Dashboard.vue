@@ -1,5 +1,6 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import { adminPaths } from '@/adminPaths';
 import { Head, Link } from '@inertiajs/vue3';
 
 const props = defineProps({
@@ -50,7 +51,7 @@ const formatCurrency = (val) => {
                     <p class="text-stone-300 text-sm mt-2 max-w-xl">متابعة شاملة وأداء كلي لمكاتب المحاماة، المستخدمين، الأنشطة، وسجلات الأمان عبر المنصة.</p>
                 </div>
                 <div class="flex items-center gap-3">
-                    <Link :href="route('admin.tenants.create')" class="px-5 py-3 bg-red-700 hover:bg-red-600 text-white font-bold rounded-2xl text-sm transition-all duration-200 shadow-lg shadow-red-900/40 hover:scale-105 flex items-center gap-2">
+                    <Link :href="adminPaths.tenantsCreate" class="px-5 py-3 bg-red-700 hover:bg-red-600 text-white font-bold rounded-2xl text-sm transition-all duration-200 shadow-lg shadow-red-900/40 hover:scale-105 flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                         إضافة مكتب جديد
                     </Link>
@@ -64,7 +65,7 @@ const formatCurrency = (val) => {
         <!-- Metric KPI Cards Grid -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <!-- Total Offices / Tenants -->
-            <Link :href="route('admin.tenants.index')" class="group bg-white rounded-3xl border border-stone-200/80 p-6 hover:shadow-xl hover:shadow-stone-200/50 transition-all duration-300 hover:-translate-y-1">
+            <Link :href="adminPaths.tenants" class="group bg-white rounded-3xl border border-stone-200/80 p-6 hover:shadow-xl hover:shadow-stone-200/50 transition-all duration-300 hover:-translate-y-1">
                 <div class="flex items-center justify-between mb-4">
                     <div class="w-13 h-13 rounded-2xl bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                         <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
@@ -191,7 +192,7 @@ const formatCurrency = (val) => {
                     <h2 class="text-xl font-black text-stone-800">أحدث مكاتب المحاماة المسجلة</h2>
                     <p class="text-xs text-stone-400 mt-1">نظرة سريعة على المكاتب المنضمة للمنصة مؤخراً</p>
                 </div>
-                <Link :href="route('admin.tenants.index')" class="inline-flex items-center gap-2 px-5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold rounded-xl transition-all">
+                <Link :href="adminPaths.tenants" class="inline-flex items-center gap-2 px-5 py-2.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-bold rounded-xl transition-all">
                     عرض جميع المكاتب ←
                 </Link>
             </div>
@@ -222,7 +223,7 @@ const formatCurrency = (val) => {
                                         {{ tenant.name ? tenant.name.charAt(0) : 'م' }}
                                     </div>
                                     <div>
-                                        <Link :href="route('admin.tenants.show', tenant.id)" class="hover:text-red-700 transition-colors">
+                                        <Link :href="adminPaths.tenant(tenant.id)" class="hover:text-red-700 transition-colors">
                                             {{ tenant.name }}
                                         </Link>
                                         <span class="block text-xs font-mono text-stone-400 font-normal">slug: {{ tenant.slug }}</span>
@@ -247,7 +248,7 @@ const formatCurrency = (val) => {
                             </td>
                             <td class="px-6 py-4 text-stone-400 text-xs">{{ tenant.created_at }}</td>
                             <td class="px-6 py-4 text-left">
-                                <Link :href="route('admin.tenants.show', tenant.id)" class="text-xs font-bold text-red-700 hover:text-red-800 transition-colors">
+                                <Link :href="adminPaths.tenant(tenant.id)" class="text-xs font-bold text-red-700 hover:text-red-800 transition-colors">
                                     التفاصيل ←
                                 </Link>
                             </td>

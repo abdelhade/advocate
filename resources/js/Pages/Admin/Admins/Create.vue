@@ -1,5 +1,6 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import { adminPaths } from '@/adminPaths';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
 
@@ -14,7 +15,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(route('admin.admins.store'), {
+    form.post(adminPaths.admins, {
         onSuccess: () => form.reset(),
     });
 };
@@ -28,7 +29,7 @@ const submit = () => {
 
         <!-- Breadcrumb -->
         <div class="flex items-center gap-2 text-sm text-stone-400 mb-6">
-            <Link :href="route('admin.admins.index')" class="hover:text-red-700 transition-colors">المديرين</Link>
+            <Link :href="adminPaths.admins" class="hover:text-red-700 transition-colors">المديرين</Link>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
             <span class="text-stone-600 font-medium">إضافة مدير جديد</span>
         </div>
@@ -133,7 +134,7 @@ const submit = () => {
                             <svg v-if="form.processing" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                             {{ form.processing ? 'جارٍ الإنشاء...' : 'إنشاء الحساب' }}
                         </button>
-                        <Link :href="route('admin.admins.index')" class="px-6 py-3 border border-stone-200 text-stone-600 text-sm font-semibold rounded-xl hover:bg-stone-50 transition-colors">
+                        <Link :href="adminPaths.admins" class="px-6 py-3 border border-stone-200 text-stone-600 text-sm font-semibold rounded-xl hover:bg-stone-50 transition-colors">
                             إلغاء
                         </Link>
                     </div>

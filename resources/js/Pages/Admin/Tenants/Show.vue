@@ -1,6 +1,7 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import AdminPasswordConfirm from '@/Components/AdminPasswordConfirm.vue';
+import { adminPaths } from '@/adminPaths';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 
@@ -70,7 +71,7 @@ const runWithPassword = (adminPassword) => {
 const handleExtendSubscription = () => {
     requestPassword({
         method: 'post',
-        url: route('admin.tenants.extend', props.tenant.id),
+        url: adminPaths.tenantExtend(props.tenant.id),
         data: { days: extendDays.value },
     });
 };
@@ -78,7 +79,7 @@ const handleExtendSubscription = () => {
 const toggleStatus = () => {
     requestPassword({
         method: 'post',
-        url: route('admin.tenants.toggle_status', props.tenant.id),
+        url: adminPaths.tenantToggleStatus(props.tenant.id),
         data: {},
     });
 };
@@ -86,7 +87,7 @@ const toggleStatus = () => {
 const deleteTenant = () => {
     requestPassword({
         method: 'delete',
-        url: route('admin.tenants.destroy', props.tenant.id),
+        url: adminPaths.tenant(props.tenant.id),
         data: {},
     });
 };
@@ -100,7 +101,7 @@ const openPlanModal = () => {
 const updatePlan = () => {
     requestPassword({
         method: 'post',
-        url: route('admin.tenants.update_plan', props.tenant.id),
+        url: adminPaths.tenantPlan(props.tenant.id),
         data: {
             plan_id: selectedPlanId.value,
             billing_period: billingPeriod.value,
@@ -118,7 +119,7 @@ const updatePlan = () => {
         <!-- Breadcrumbs & Actions Header -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div class="flex items-center gap-2 text-sm text-stone-400">
-                <Link :href="route('admin.tenants.index')" class="hover:text-red-700 transition-colors">المكاتب</Link>
+                <Link :href="adminPaths.tenants" class="hover:text-red-700 transition-colors">المكاتب</Link>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                 <span class="text-stone-800 font-bold">{{ tenant.name }}</span>
             </div>

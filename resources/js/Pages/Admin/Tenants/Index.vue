@@ -1,6 +1,7 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
 import AdminPasswordConfirm from '@/Components/AdminPasswordConfirm.vue';
+import { adminPaths } from '@/adminPaths';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { ref, watch, onMounted, onUnmounted, computed } from 'vue';
 
@@ -16,7 +17,7 @@ const planFilter = ref(props.filters?.plan || '');
 let searchTimeout = null;
 
 const applyFilters = () => {
-    router.get(route('admin.tenants.index'), {
+    router.get(adminPaths.tenants, {
         search: search.value || undefined,
         plan: planFilter.value || undefined,
     }, {
@@ -110,7 +111,7 @@ const runWithPassword = (adminPassword) => {
 const deleteTenant = (id) => {
     requestPassword({
         method: 'delete',
-        url: route('admin.tenants.destroy', id),
+        url: adminPaths.tenant(id),
         data: {},
     });
 };
@@ -118,7 +119,7 @@ const deleteTenant = (id) => {
 const extendSubscription = (id, days) => {
     requestPassword({
         method: 'post',
-        url: route('admin.tenants.extend', id),
+        url: adminPaths.tenantExtend(id),
         data: { days },
     });
 };
@@ -126,7 +127,7 @@ const extendSubscription = (id, days) => {
 const toggleStatus = (id) => {
     requestPassword({
         method: 'post',
-        url: route('admin.tenants.toggle_status', id),
+        url: adminPaths.tenantToggleStatus(id),
         data: {},
     });
 };
@@ -135,7 +136,7 @@ const updatePlan = () => {
     if (!planModalTenant.value || !selectedPlanId.value) return;
     requestPassword({
         method: 'post',
-        url: route('admin.tenants.update_plan', planModalTenant.value.id),
+        url: adminPaths.tenantPlan(planModalTenant.value.id),
         data: {
             plan_id: selectedPlanId.value,
             billing_period: billingPeriod.value,
@@ -169,7 +170,7 @@ const statusLabel = (tenant) => {
             <div>
                 <p class="text-sm text-stone-400">إدارة تفاصيل المكاتب المسجلة، تواريخ الاشتراكات، والتمديد والإلغاء</p>
             </div>
-            <Link :href="route('admin.tenants.create')" class="inline-flex items-center gap-2 px-5 py-3 bg-red-700 hover:bg-red-800 text-white text-sm font-bold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-red-200 flex-shrink-0">
+            <Link :href="adminPaths.tenantsCreate" class="inline-flex items-center gap-2 px-5 py-3 bg-red-700 hover:bg-red-800 text-white text-sm font-bold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-red-200 flex-shrink-0">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 إضافة مكتب جديد
             </Link>
@@ -231,7 +232,7 @@ const statusLabel = (tenant) => {
                         >
                             <td class="px-6 py-4 text-stone-400 font-mono">{{ (tenants.current_page - 1) * tenants.per_page + index + 1 }}</td>
                             <td class="px-6 py-4">
-                                <Link :href="route('admin.tenants.show', tenant.id)" class="block">
+                                <Link :href="adminPaths.tenant(tenant.id)" class="block">
                                     <span class="font-bold text-stone-900 hover:text-red-700 transition-colors block text-base">{{ tenant.name }}</span>
                                     <span class="text-xs text-stone-500 font-mono">المالك: {{ tenant.owner_name }} ({{ tenant.email }})</span>
                                 </Link>
@@ -297,7 +298,7 @@ const statusLabel = (tenant) => {
                                             <!-- View Details -->
                                             <div class="py-1">
                                                 <Link
-                                                    :href="route('admin.tenants.show', tenant.id)"
+                                                    :href="adminPaths.tenant(tenant.id)"
                                                     class="flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-stone-700 hover:bg-stone-50 hover:text-stone-900 transition-colors"
                                                 >
                                                     <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>

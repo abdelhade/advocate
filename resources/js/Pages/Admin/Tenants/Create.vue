@@ -1,5 +1,6 @@
 <script setup>
 import AdminLayout from '@/Layouts/AdminLayout.vue';
+import { adminPaths } from '@/adminPaths';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const form = useForm({
@@ -8,7 +9,7 @@ const form = useForm({
 });
 
 const submit = () => {
-    form.post(route('admin.tenants.store'));
+    form.post(adminPaths.tenants);
 };
 </script>
 
@@ -20,7 +21,7 @@ const submit = () => {
 
         <!-- Breadcrumb -->
         <div class="flex items-center gap-2 text-sm text-stone-400 mb-6">
-            <Link :href="route('admin.tenants.index')" class="hover:text-red-700 transition-colors">المكاتب</Link>
+            <Link :href="adminPaths.tenants" class="hover:text-red-700 transition-colors">المكاتب</Link>
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
             <span class="text-stone-600 font-medium">إضافة مكتب جديد</span>
         </div>
@@ -85,7 +86,7 @@ const submit = () => {
                             <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                             {{ form.processing ? 'جارٍ الإنشاء...' : 'إنشاء المكتب' }}
                         </button>
-                        <Link :href="route('admin.tenants.index')" class="px-6 py-3 border border-stone-200 text-stone-600 text-sm font-semibold rounded-xl hover:bg-stone-50 transition-colors">
+                        <Link :href="adminPaths.tenants" class="px-6 py-3 border border-stone-200 text-stone-600 text-sm font-semibold rounded-xl hover:bg-stone-50 transition-colors">
                             إلغاء
                         </Link>
                     </div>
