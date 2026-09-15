@@ -123,9 +123,22 @@ class TenantUrl
 
     public static function domainFor(Tenant|string $tenant): string
     {
-        // Local/testing: always use the configured base domain so artisan serve works.
-        if (app()->environment(['local', 'testing'])) {
-            return self::baseDomain();
+        // Prefer the domain the user is currently on (register on jalsateg.com
+        // → redirect to *.jalsateg.com; local → *.localhost). Avoids APP_ENV=local
+        // on a live host sending people to *.localhost.
+        $request = request();
+        if ($request) {
+            $host = strtolower($request->getHost());
+            $fromHost = self::domainFromHost($host);
+            if ($fromHost) {
+                return $fromHost;
+            }
+
+            foreach (self::availableDomains() as $base) {
+                if ($host === $base || $host === 'www.'.$base) {
+                    return $base;
+                }
+            }
         }
 
         if ($tenant instanceof Tenant && filled($tenant->domain)) {
