@@ -76,7 +76,7 @@ class RegisterController extends Controller
                 'password' => Hash::make($request->password),
                 'phone' => $request->phone,
                 'status' => 'active',
-                'email_verified_at' => null,
+                'email_verified_at' => now(),
             ]);
 
             $tenant = Tenant::create([
@@ -113,9 +113,10 @@ class RegisterController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'تم إنشاء مكتبك بنجاح! أرسلنا رسالة تأكيد إلى بريدك الإلكتروني...',
-            'redirect_url' => TenantUrl::for($tenant, '/verify-email', $request),
+            'message' => 'تم إنشاء مكتبك بنجاح!',
+            'redirect_url' => TenantUrl::for($tenant, '/dashboard', $request),
         ]);
+
     }
 
     /**

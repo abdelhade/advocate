@@ -5,6 +5,7 @@ import { ref, onMounted, computed } from 'vue';
 const props = defineProps({
     stats: Array,
     realCounts: Object,
+    tenantDashboardUrl: String,
 });
 
 const page = usePage();
@@ -120,10 +121,10 @@ const displayStats = computed(() => {
 
                     <div class="flex items-center gap-3">
                         <template v-if="user">
-                            <Link href="/dashboard" class="px-5 py-2.5 bg-red-700 hover:bg-red-600 text-white font-bold rounded-xl transition-all duration-200 shadow-lg shadow-red-900/20 text-sm flex items-center gap-2">
+                            <a :href="props.tenantDashboardUrl || '/dashboard'" class="px-5 py-2.5 bg-red-700 hover:bg-red-600 text-white font-bold rounded-xl transition-all duration-200 shadow-lg shadow-red-900/20 text-sm flex items-center gap-2">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                 <span>{{ user.name }}</span>
-                            </Link>
+                            </a>
                         </template>
                         <template v-else>
                             <Link href="/login" class="px-4 py-2 text-slate-300 hover:text-white font-bold rounded-xl transition-colors duration-200 text-sm">
@@ -178,10 +179,10 @@ const displayStats = computed(() => {
                     :class="{ 'opacity-100 translate-y-0': isVisible, 'opacity-0 translate-y-6': !isVisible }"
                 >
                     <template v-if="user">
-                        <Link href="/dashboard" class="px-8 py-4 bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 text-white font-bold rounded-2xl shadow-xl shadow-red-900/30 transition-all duration-200 hover:-translate-y-0.5 text-base flex items-center justify-center gap-2">
+                        <a :href="props.tenantDashboardUrl || '/dashboard'" class="px-8 py-4 bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 text-white font-bold rounded-2xl shadow-xl shadow-red-900/30 transition-all duration-200 hover:-translate-y-0.5 text-base flex items-center justify-center gap-2">
                             🏛️ الدخول لمكتبك
                             <svg class="w-5 h-5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                        </Link>
+                        </a>
                     </template>
                     <template v-else>
                         <Link href="/register" class="px-8 py-4 bg-gradient-to-r from-red-700 to-red-600 hover:from-red-600 hover:to-red-500 text-white font-bold rounded-2xl shadow-xl shadow-red-900/30 transition-all duration-200 hover:-translate-y-0.5 text-base flex items-center justify-center gap-2">

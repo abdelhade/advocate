@@ -70,7 +70,18 @@ Route::get('/', function () {
         ];
     });
 
-    return Inertia::render('CentralWelcome', $data);
+    $tenantDashboardUrl = null;
+    $user = auth()->user();
+    if ($user) {
+        $tenant = $user->tenants()->where('tenants.status', 'active')->first();
+        if ($tenant) {
+            $tenantDashboardUrl = \App\Support\TenantUrl::for($tenant, '/dashboard', request());
+        }
+    }
+
+    return Inertia::render('CentralWelcome', array_merge($data, [
+        'tenantDashboardUrl' => $tenantDashboardUrl,
+    ]));
 })->name('central.home');
 
 Route::get('/pricing', function () {
@@ -85,6 +96,27 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('central.login');
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('central.login.submit');
 });
+
+Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
+    $user = $request->user();
+
+    if (! $user) {
+        return redirect()->route('central.login');
+    }
+
+    if ($user->is_super_admin) {
+        return redirect()->route('admin.dashboard');
+    }
+
+    $tenant = $user->tenants()->where('tenants.status', 'active')->first();
+
+    if ($tenant) {
+        return Inertia::location(\App\Support\TenantUrl::for($tenant, '/dashboard', $request));
+    }
+
+    return redirect()->route('central.home');
+})->middleware('auth')->name('dashboard');
+
 
 // Admin Auth (Guest)
 Route::redirect('/admin', '/admin/dashboard');

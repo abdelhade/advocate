@@ -128,6 +128,12 @@ class TenantUrl
         $request = $request ?? (request()->hasHeader('host') ? request() : null);
         if ($request) {
             $host = strtolower($request->getHost());
+
+            // Treat 127.0.0.1 as localhost for local development
+            if ($host === '127.0.0.1') {
+                return 'localhost';
+            }
+
             $fromHost = self::domainFromHost($host);
             if ($fromHost) {
                 return $fromHost;
