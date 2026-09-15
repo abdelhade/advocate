@@ -34,12 +34,14 @@ class TenantUrl
     public static function availableDomains(): array
     {
         $domains = config('tenancy.available_domains', []);
+        $base = self::baseDomain();
 
-        if (! is_array($domains) || $domains === []) {
-            return [self::baseDomain()];
-        }
+        $merged = array_filter(array_unique(array_merge(
+            is_array($domains) ? $domains : [],
+            [$base, 'jalsateg.com', 'localhost']
+        )));
 
-        return array_values(array_unique(array_map('strtolower', $domains)));
+        return array_values(array_map('strtolower', $merged));
     }
 
     /**

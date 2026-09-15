@@ -31,7 +31,9 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-Route::redirect('/', '/dashboard');
+Route::get('/', function () {
+    return redirect()->route('dashboard');
+})->name('tenant.home');
 
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])->name('login');
