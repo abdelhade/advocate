@@ -40,6 +40,11 @@ class Subscription extends Model
         return $this->belongsTo(SubscriptionPlan::class, 'plan_id');
     }
 
+    public function invoices(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(SubscriptionInvoice::class, 'subscription_id');
+    }
+
     public function isTrialing(): bool
     {
         return $this->status === 'trialing'

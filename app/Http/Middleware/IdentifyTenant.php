@@ -42,11 +42,12 @@ class IdentifyTenant
         }
 
         $hostDomain = TenantUrl::domainFromHost($request->getHost());
-        $tenantDomain = TenantUrl::domainFor($tenant);
+        $tenantDomain = TenantUrl::domainFor($tenant, $request);
 
         if (
             ! app()->environment(['local', 'testing'])
             && $hostDomain
+            && filled($tenant->domain)
             && $hostDomain !== $tenantDomain
         ) {
             abort(404, 'المكتب غير موجود على هذا النطاق.');

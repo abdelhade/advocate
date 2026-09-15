@@ -133,6 +133,24 @@ class AdminTenantController extends Controller
                     'is_owner' => (bool) $u->pivot->is_owner,
                     'joined_at' => $u->pivot->joined_at ? \Carbon\Carbon::parse($u->pivot->joined_at)->format('Y-m-d') : '-',
                 ]),
+                'subscription_invoices' => $tenant->subscriptionInvoices()
+                    ->latest('issued_at')
+                    ->get()
+                    ->map(fn ($inv) => [
+                        'id' => $inv->id,
+                        'invoice_number' => $inv->invoice_number,
+                        'plan_name' => $inv->plan_name,
+                        'billing_period' => $inv->billing_period,
+                        'amount' => (float) $inv->amount,
+                        'tax_amount' => (float) $inv->tax_amount,
+                        'total_amount' => (float) $inv->total_amount,
+                        'status' => $inv->status,
+                        'status_label' => $inv->displayStatus(),
+                        'payment_method' => $inv->displayPaymentMethod(),
+                        'issued_at' => $inv->issued_at?->format('Y-m-d') ?? '-',
+                        'due_date' => $inv->due_date?->format('Y-m-d') ?? '-',
+                        'paid_at' => $inv->paid_at?->format('Y-m-d H:i') ?? '-',
+                    ]),
                 'created_at' => $tenant->created_at?->format('Y-m-d'),
             ],
             'plans' => $plans,

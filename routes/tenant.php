@@ -19,6 +19,7 @@ use App\Http\Controllers\Tenant\InvoiceController;
 use App\Http\Controllers\Tenant\PaymentController;
 use App\Http\Controllers\Tenant\SessionController;
 use App\Http\Controllers\Tenant\TaskController;
+use App\Http\Controllers\Tenant\TenantBillingController;
 use App\Http\Controllers\Tenant\TenantUserController;
 use App\Http\Controllers\TenantSwitchController;
 use Illuminate\Support\Facades\Route;
@@ -82,6 +83,9 @@ Route::middleware('auth')->group(function () {
     Route::resource('expenses', ExpenseController::class)->only(['index', 'store', 'destroy']);
 
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+
+    Route::get('billing', [TenantBillingController::class, 'index'])->name('tenant.billing.index');
+    Route::get('billing/invoices/{invoice}', [TenantBillingController::class, 'showInvoice'])->name('tenant.billing.show');
 
     Route::post('documents', [DocumentController::class, 'store'])->name('documents.store');
     Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');

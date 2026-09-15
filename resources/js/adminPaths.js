@@ -7,6 +7,7 @@ export const adminPaths = {
     login: '/admin/login',
     logout: '/admin/logout',
     tenants: '/admin/tenants',
+    tenantsSearchApi: '/admin/tenants/search-api',
     tenantsCreate: '/admin/tenants/create',
     tenant: (id) => `/admin/tenants/${id}`,
     tenantEdit: (id) => `/admin/tenants/${id}/edit`,
@@ -17,6 +18,9 @@ export const adminPaths = {
     adminsCreate: '/admin/admins/create',
     adminEdit: (id) => `/admin/admins/${id}/edit`,
     adminUpdate: (id) => `/admin/admins/${id}`,
+    invoices: '/admin/invoices',
+    invoice: (id) => `/admin/invoices/${id}`,
+    invoiceStatus: (id) => `/admin/invoices/${id}/status`,
 };
 
 export function isAdminPathActive(prefixes) {

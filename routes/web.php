@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminAdminController;
 use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\Admin\AdminDashboardController;
+use App\Http\Controllers\Admin\AdminSubscriptionInvoiceController;
 use App\Http\Controllers\Admin\AdminTenantController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Central\RegisterController;
@@ -114,4 +115,10 @@ Route::middleware(AdminAuthenticated::class)->prefix('admin')->group(function ()
     Route::get('/admins/{id}/edit', [AdminAdminController::class, 'edit'])->name('admin.admins.edit');
     Route::put('/admins/{id}', [AdminAdminController::class, 'update'])->name('admin.admins.update');
     Route::delete('/admins/{id}', [AdminAdminController::class, 'destroy'])->name('admin.admins.destroy');
+
+    Route::get('/tenants/search-api', [AdminSubscriptionInvoiceController::class, 'searchTenants'])->name('admin.tenants.search_api');
+    Route::get('/invoices', [AdminSubscriptionInvoiceController::class, 'index'])->name('admin.invoices.index');
+    Route::post('/invoices', [AdminSubscriptionInvoiceController::class, 'store'])->name('admin.invoices.store');
+    Route::get('/invoices/{id}', [AdminSubscriptionInvoiceController::class, 'show'])->name('admin.invoices.show');
+    Route::post('/invoices/{id}/status', [AdminSubscriptionInvoiceController::class, 'updateStatus'])->name('admin.invoices.update_status');
 });

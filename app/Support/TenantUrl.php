@@ -121,12 +121,9 @@ class TenantUrl
         return in_array(strtolower($slug), self::reservedSlugs(), true);
     }
 
-    public static function domainFor(Tenant|string $tenant): string
+    public static function domainFor(Tenant|string $tenant, ?Request $request = null): string
     {
-        // Prefer the domain the user is currently on (register on jalsateg.com
-        // → redirect to *.jalsateg.com; local → *.localhost). Avoids APP_ENV=local
-        // on a live host sending people to *.localhost.
-        $request = request();
+        $request = $request ?? (request()->hasHeader('host') ? request() : null);
         if ($request) {
             $host = strtolower($request->getHost());
             $fromHost = self::domainFromHost($host);
@@ -151,10 +148,10 @@ class TenantUrl
     public static function for(Tenant|string $tenant, string $path = '/dashboard', ?Request $request = null): string
     {
         $slug = $tenant instanceof Tenant ? $tenant->slug : $tenant;
-        $domain = self::domainFor($tenant);
-        $request = $request ?? request();
-        $scheme = $request->getScheme();
-        $port = $request->getPort();
+        $request = $request ?? (request()->hasHeader('host') ? request() : null);
+        $domain = self::domainFor($tenant, $request);
+        $scheme = $request ? $request->getScheme() : 'https';
+        $port = $request ? $request->getPort() : null;
         $portStr = ($port && ! in_array((int) $port, [80, 443], true)) ? ':'.$port : '';
         $path = '/'.ltrim($path, '/');
 

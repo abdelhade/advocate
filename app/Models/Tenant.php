@@ -83,4 +83,12 @@ class Tenant extends Model
             ->latest('starts_at')
             ->first();
     }
+
+    /**
+     * Subscription invoices issued for this tenant.
+     */
+    public function subscriptionInvoices(): HasMany
+    {
+        return $this->hasMany(SubscriptionInvoice::class, 'tenant_id');
+    }
 }

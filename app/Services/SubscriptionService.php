@@ -78,7 +78,50 @@ class SubscriptionService
             'settings' => $settings,
         ]);
 
+        $this->createInvoiceForSubscription($tenant, $subscription, $plan, $billingPeriod);
+
         return $subscription->load('plan');
+    }
+
+    public function createInvoiceForSubscription(
+        Tenant $tenant,
+        Subscription $subscription,
+        SubscriptionPlan $plan,
+        string $billingPeriod = 'yearly',
+        string $status = 'paid',
+        ?string $paymentMethod = null
+    ): \App\Models\SubscriptionInvoice {
+        $amount = $billingPeriod === 'monthly' ? (float) $plan->price_monthly : (float) $plan->price_yearly;
+        $taxAmount = 0.00;
+        $totalAmount = $amount + $taxAmount;
+
+        if ($plan->isFree() || $amount == 0) {
+            $paymentMethod = $paymentMethod ?? 'free';
+            $status = 'paid';
+        } else {
+            $paymentMethod = $paymentMethod ?? 'bank_transfer';
+        }
+
+        $count = \App\Models\SubscriptionInvoice::count() + 1;
+        $invoiceNumber = 'SINV-' . date('Y') . '-' . str_pad($count, 5, '0', STR_PAD_LEFT);
+
+        return \App\Models\SubscriptionInvoice::create([
+            'invoice_number' => $invoiceNumber,
+            'tenant_id' => $tenant->id,
+            'subscription_id' => $subscription->id,
+            'plan_id' => $plan->id,
+            'plan_name' => $plan->name,
+            'billing_period' => $billingPeriod,
+            'amount' => $amount,
+            'tax_amount' => $taxAmount,
+            'total_amount' => $totalAmount,
+            'status' => $status,
+            'issued_at' => now()->toDateString(),
+            'due_date' => now()->addDays(7)->toDateString(),
+            'paid_at' => $status === 'paid' ? now() : null,
+            'payment_method' => $paymentMethod,
+            'notes' => "فاتورة اشتراك تلقائية لخطة «{$plan->name}» ({$billingPeriod})",
+        ]);
     }
 
     public function summarize(?Subscription $subscription, Tenant $tenant): array
