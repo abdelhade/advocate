@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('case_types', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
+            $table->foreignUuid('tenant_id')->constrained('tenants')->cascadeOnDelete();
             $table->string('name');
             $table->string('color', 20)->nullable()->default('#3b82f6');
             $table->timestamps();
@@ -24,3 +24,4 @@ return new class extends Migration
         Schema::dropIfExists('case_types');
     }
 };
+
