@@ -203,8 +203,10 @@ const submit = () => {
                                     class="w-full px-4 py-3 rounded-xl border border-stone-300 bg-stone-50 text-stone-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
                                 />
                                 <p class="text-xs text-stone-400 mt-1">سيتم تنبيهك بصوت عند الوصول لهذا الموعد</p>
+                            </div>
                         </div>
                     </div>
+
 
                     <!-- Description -->
                     <div>
