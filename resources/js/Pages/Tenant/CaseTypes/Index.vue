@@ -23,12 +23,14 @@ const colorPresets = [
 const openCreate = () => {
     editingType.value = null;
     form.reset();
+    form.clearErrors();
     form.color = '#3b82f6';
     showModal.value = true;
 };
 
 const openEdit = (type) => {
     editingType.value = type;
+    form.clearErrors();
     form.name = type.name;
     form.color = type.color || '#3b82f6';
     showModal.value = true;
@@ -37,11 +39,19 @@ const openEdit = (type) => {
 const submitForm = () => {
     if (editingType.value) {
         form.put(route('case-types.update', editingType.value.id), {
-            onSuccess: () => showModal.value = false,
+            preserveScroll: true,
+            onSuccess: () => {
+                showModal.value = false;
+                form.reset();
+            },
         });
     } else {
         form.post(route('case-types.store'), {
-            onSuccess: () => showModal.value = false,
+            preserveScroll: true,
+            onSuccess: () => {
+                showModal.value = false;
+                form.reset();
+            },
         });
     }
 };

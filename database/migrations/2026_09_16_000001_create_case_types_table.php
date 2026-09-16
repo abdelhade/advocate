@@ -8,6 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('case_types')) {
+            $type = Schema::getColumnType('case_types', 'tenant_id');
+            if ($type !== 'string' && $type !== 'guid' && $type !== 'char') {
+                Schema::dropIfExists('case_types');
+            }
+        }
+
         if (!Schema::hasTable('case_types')) {
             Schema::create('case_types', function (Blueprint $table) {
                 $table->id();
@@ -26,5 +33,6 @@ return new class extends Migration
         Schema::dropIfExists('case_types');
     }
 };
+
 
 
