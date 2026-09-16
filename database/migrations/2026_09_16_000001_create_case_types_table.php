@@ -8,15 +8,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('case_types', function (Blueprint $table) {
-            $table->id();
-            $table->foreignUuid('tenant_id')->constrained('tenants')->cascadeOnDelete();
-            $table->string('name');
-            $table->string('color', 20)->nullable()->default('#3b82f6');
-            $table->timestamps();
+        if (!Schema::hasTable('case_types')) {
+            Schema::create('case_types', function (Blueprint $table) {
+                $table->id();
+                $table->foreignUuid('tenant_id')->constrained('tenants')->cascadeOnDelete();
+                $table->string('name');
+                $table->string('color', 20)->nullable()->default('#3b82f6');
+                $table->timestamps();
 
-            $table->unique(['tenant_id', 'name']);
-        });
+                $table->unique(['tenant_id', 'name']);
+            });
+        }
     }
 
     public function down(): void
@@ -24,4 +26,5 @@ return new class extends Migration
         Schema::dropIfExists('case_types');
     }
 };
+
 
