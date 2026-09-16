@@ -216,9 +216,6 @@ const displayStats = computed(() => {
                                 </a>
                             </template>
                             <template v-else>
-                                <Link href="/login" class="px-4 py-2 text-blue-200 hover:text-white font-bold rounded-xl transition-colors duration-200 text-sm">
-                                    تسجيل الدخول
-                                </Link>
                                 <Link href="/register" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl transition-all duration-200 shadow-lg shadow-blue-900/40 text-sm">
                                     تسجيل جديد
                                 </Link>
