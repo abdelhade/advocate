@@ -94,7 +94,7 @@ class ClientController extends Controller
                 'address' => $client->address,
                 'notes' => $client->notes,
                 'created_at' => $client->created_at->format('Y-m-d'),
-                'cases' => $client->cases->map(function ($case) {
+                'legal_cases' => $client->cases->map(function ($case) {
                     return [
                         'id' => $case->id,
                         'case_number' => $case->case_number,

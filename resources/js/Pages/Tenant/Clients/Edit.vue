@@ -10,7 +10,7 @@ const form = useForm({
     name: props.client.name,
     phone: props.client.phone || '',
     email: props.client.email || '',
-    national_id: props.client.national_id || '',
+    national_id_or_cr: props.client.national_id_or_cr || '',
     address: props.client.address || '',
     notes: props.client.notes || '',
 });
@@ -74,16 +74,16 @@ const submit = () => {
 
                             <!-- National ID -->
                             <div>
-                                <label for="national_id" class="block text-sm font-semibold text-stone-700 mb-2">رقم الهوية</label>
+                                <label for="national_id_or_cr" class="block text-sm font-semibold text-stone-700 mb-2">رقم الهوية</label>
                                 <input
-                                    id="national_id"
+                                    id="national_id_or_cr"
                                     type="text"
-                                    v-model="form.national_id"
+                                    v-model="form.national_id_or_cr"
                                     dir="ltr"
                                     class="w-full px-4 py-3 rounded-xl border border-stone-300 bg-stone-50 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-left"
-                                    :class="{ 'border-red-500 ring-1 ring-red-500': form.errors.national_id }"
+                                    :class="{ 'border-red-500 ring-1 ring-red-500': form.errors.national_id_or_cr }"
                                 />
-                                <p v-if="form.errors.national_id" class="mt-1.5 text-sm text-red-600">{{ form.errors.national_id }}</p>
+                                <p v-if="form.errors.national_id_or_cr" class="mt-1.5 text-sm text-red-600">{{ form.errors.national_id_or_cr }}</p>
                             </div>
 
                             <!-- Email -->

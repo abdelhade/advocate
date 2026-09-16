@@ -64,7 +64,31 @@ const deleteTask = (task) => {
 };
 
 const filterStatus = (status) => {
-    router.get(route('tasks.index'), { ...props.filters, status: status || undefined }, { preserveState: true });
+    router.get(route('tasks.index'), { ...props.filters, status: status || undefined, search: searchQuery.value || undefined, priority: priorityFilter.value || undefined, case_id: caseFilter.value || undefined }, { preserveState: true });
+};
+
+const searchQuery = ref(props.filters?.search || '');
+const priorityFilter = ref(props.filters?.priority || '');
+const caseFilter = ref(props.filters?.case_id || '');
+
+let searchTimeout = null;
+const applyFilters = () => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+        router.get(route('tasks.index'), {
+            status: props.filters?.status || undefined,
+            search: searchQuery.value || undefined,
+            priority: priorityFilter.value || undefined,
+            case_id: caseFilter.value || undefined,
+        }, { preserveState: true, replace: true });
+    }, 400);
+};
+
+const resetFilters = () => {
+    searchQuery.value = '';
+    priorityFilter.value = '';
+    caseFilter.value = '';
+    router.get(route('tasks.index'));
 };
 
 const priorityLabels = {
@@ -98,6 +122,50 @@ const statusLabels = {
                 مهمة جديدة
             </button>
         </template>
+
+        <!-- Advanced Filters Bar -->
+        <div class="bg-white rounded-2xl border border-stone-200/80 p-5 mb-4 shadow-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Search -->
+                <div class="relative">
+                    <input
+                        type="text"
+                        v-model="searchQuery"
+                        @input="applyFilters"
+                        placeholder="البحث في المهام..."
+                        class="w-full pl-4 pr-10 py-2.5 rounded-xl border border-stone-200 text-stone-800 placeholder-stone-400 text-xs focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition"
+                    />
+                    <svg class="w-4 h-4 text-stone-400 absolute right-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <!-- Priority Filter -->
+                <div>
+                    <select v-model="priorityFilter" @change="applyFilters" class="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-stone-800 text-xs font-semibold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
+                        <option value="">جميع الأولويات</option>
+                        <option value="urgent">🔴 عاجلة جداً</option>
+                        <option value="high">🟠 عالية</option>
+                        <option value="medium">🔵 متوسطة</option>
+                        <option value="low">⚪ منخفضة</option>
+                    </select>
+                </div>
+                <!-- Case Filter -->
+                <div>
+                    <select v-model="caseFilter" @change="applyFilters" class="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 text-stone-800 text-xs font-semibold focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 transition">
+                        <option value="">جميع القضايا</option>
+                        <option v-for="c in cases" :key="c.id" :value="c.id">{{ c.title }} ({{ c.case_number }})</option>
+                    </select>
+                </div>
+                <!-- Reset -->
+                <div class="flex items-center gap-2">
+                    <button
+                        v-if="searchQuery || priorityFilter || caseFilter || filters.status"
+                        @click="resetFilters"
+                        class="px-4 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold rounded-xl transition border border-stone-200 w-full"
+                    >
+                        إعادة ضبط الفلاتر
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- Status Filter Tabs -->
         <div class="flex flex-wrap gap-2 mb-6 border-b border-stone-200 pb-4">

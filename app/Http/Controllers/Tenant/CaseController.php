@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use App\Models\CaseType;
 use App\Models\LegalCase;
 use App\Services\TenantContext;
 use Illuminate\Http\Request;
@@ -58,8 +59,11 @@ class CaseController extends Controller
         Gate::authorize('create', LegalCase::class);
 
         $clients = Client::orderBy('name')->get(['id', 'name']);
+        $tenantId = app(TenantContext::class)->id();
+        $caseTypes = CaseType::where('tenant_id', $tenantId)->orderBy('name')->get(['id', 'name', 'color']);
         return Inertia::render('Tenant/Cases/Create', [
             'clients' => $clients,
+            'caseTypes' => $caseTypes,
         ]);
     }
 
@@ -86,6 +90,7 @@ class CaseController extends Controller
             'circuit' => ['nullable', 'string', 'max:191'],
             'status' => ['required', 'string', 'in:active,suspended,won,lost,closed'],
             'internal_number' => ['nullable', 'string', 'max:191'],
+            'reminder_at' => ['nullable', 'date'],
         ]);
 
         $validated['primary_lawyer_id'] = Auth::id();
@@ -182,6 +187,8 @@ class CaseController extends Controller
         Gate::authorize('update', $case);
 
         $clients = Client::orderBy('name')->get(['id', 'name']);
+        $tenantId = app(TenantContext::class)->id();
+        $caseTypes = CaseType::where('tenant_id', $tenantId)->orderBy('name')->get(['id', 'name', 'color']);
         
         return Inertia::render('Tenant/Cases/Edit', [
             'case' => [
@@ -194,8 +201,10 @@ class CaseController extends Controller
                 'court_name' => $case->court_name,
                 'circuit' => $case->circuit,
                 'status' => $case->status,
+                'reminder_at' => $case->reminder_at?->format('Y-m-d\TH:i'),
             ],
             'clients' => $clients,
+            'caseTypes' => $caseTypes,
         ]);
     }
 
@@ -222,6 +231,7 @@ class CaseController extends Controller
             'circuit' => ['nullable', 'string', 'max:191'],
             'status' => ['required', 'string', 'in:active,suspended,won,lost,closed'],
             'internal_number' => ['nullable', 'string', 'max:191'],
+            'reminder_at' => ['nullable', 'date'],
         ]);
 
         $case->update($validated);

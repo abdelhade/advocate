@@ -5,6 +5,7 @@ import { Head, Link, useForm } from '@inertiajs/vue3';
 const props = defineProps({
     case: Object,
     clients: Array,
+    caseTypes: Array,
 });
 
 const form = useForm({
@@ -18,6 +19,7 @@ const form = useForm({
     opponent_lawyer: props.case.opponent_lawyer || '',
     description: props.case.description || '',
     filed_at: props.case.filed_at || '',
+    reminder_at: props.case.reminder_at || '',
 });
 
 const submit = () => {
@@ -75,12 +77,8 @@ const submit = () => {
                             <div>
                                 <label for="case_type" class="block text-sm font-semibold text-stone-700 mb-2">نوع القضية <span class="text-red-500">*</span></label>
                                 <select id="case_type" v-model="form.case_type" required class="w-full px-4 py-3 rounded-xl border border-stone-300 bg-stone-50 text-stone-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all">
-                                    <option value="جنائي">جنائي</option>
-                                    <option value="مدني">مدني</option>
-                                    <option value="تجاري">تجاري</option>
-                                    <option value="أسرة">أسرة (أحوال شخصية)</option>
-                                    <option value="عمالي">عمالي</option>
-                                    <option value="إداري">إداري</option>
+                                    <option value="" disabled>اختر نوع القضية...</option>
+                                    <option v-for="ct in caseTypes" :key="ct.id" :value="ct.name">{{ ct.name }}</option>
                                 </select>
                             </div>
                         </div>
@@ -125,6 +123,13 @@ const submit = () => {
                             <div>
                                 <label for="filed_at" class="block text-sm font-semibold text-stone-700 mb-2">تاريخ رفع القضية</label>
                                 <input id="filed_at" type="date" v-model="form.filed_at" class="w-full px-4 py-3 rounded-xl border border-stone-300 bg-stone-50 text-stone-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+                            </div>
+
+                            <!-- Reminder -->
+                            <div>
+                                <label for="reminder_at" class="block text-sm font-semibold text-stone-700 mb-2">⏰ موعد التنبيه</label>
+                                <input id="reminder_at" type="datetime-local" v-model="form.reminder_at" class="w-full px-4 py-3 rounded-xl border border-stone-300 bg-stone-50 text-stone-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all" />
+                                <p class="text-xs text-stone-400 mt-1">سيتم تنبيهك بصوت عند الوصول لهذا الموعد</p>
                             </div>
                         </div>
                     </div>

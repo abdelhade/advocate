@@ -27,7 +27,15 @@ class LegalCase extends Model
         'case_type',
         'status',
         'primary_lawyer_id',
+        'reminder_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'reminder_at' => 'datetime',
+        ];
+    }
 
     /**
      * Client who owns this case.
