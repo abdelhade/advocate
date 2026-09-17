@@ -11,6 +11,7 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Tenant\AuditLogController;
+use App\Http\Controllers\Tenant\CaseAttachmentController;
 use App\Http\Controllers\Tenant\CaseController;
 use App\Http\Controllers\Tenant\ClientController;
 use App\Http\Controllers\Tenant\DashboardController;
@@ -78,6 +79,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('case-types', CaseTypeController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::post('cases/{case}/sessions', [SessionController::class, 'store'])->name('cases.sessions.store');
     Route::delete('cases/{case}/sessions/{session}', [SessionController::class, 'destroy'])->name('cases.sessions.destroy');
+
+    Route::post('cases/{case}/attachments', [CaseAttachmentController::class, 'store'])->name('cases.attachments.store');
+    Route::get('cases/{case}/attachments/{media}/download', [CaseAttachmentController::class, 'download'])->name('cases.attachments.download');
+    Route::delete('cases/{case}/attachments/{media}', [CaseAttachmentController::class, 'destroy'])->name('cases.attachments.destroy');
 
     Route::resource('tasks', TaskController::class)->except(['create', 'edit', 'show']);
     Route::patch('tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');

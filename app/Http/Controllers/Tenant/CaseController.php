@@ -107,7 +107,7 @@ class CaseController extends Controller
 
         $case->load(['client', 'sessions' => function ($query) {
             $query->orderBy('session_date', 'asc');
-        }, 'parties', 'documents.uploader', 'primaryLawyer', 'tasks.assignee', 'invoices', 'expenses']);
+        }, 'parties', 'documents.uploader', 'primaryLawyer', 'tasks.assignee', 'invoices', 'expenses', 'media']);
 
         return Inertia::render('Tenant/Cases/Show', [
             'case' => [
@@ -149,6 +149,21 @@ class CaseController extends Controller
                         'file_size' => round($doc->file_size / 1024, 2) . ' KB',
                         'uploader_name' => $doc->uploader?->name,
                         'created_at' => $doc->created_at->format('Y-m-d H:i'),
+                    ];
+                }),
+                'attachments' => $case->getMedia('attachments')->map(function ($media) use ($case) {
+                    return [
+                        'id' => $media->id,
+                        'file_name' => $media->file_name,
+                        'name' => $media->name,
+                        'mime_type' => $media->mime_type,
+                        'size' => $media->size,
+                        'human_readable_size' => $media->human_readable_size,
+                        'uploader_name' => $media->getCustomProperty('uploader_name', '—'),
+                        'created_at' => $media->created_at->format('Y-m-d H:i'),
+                        'download_url' => route('cases.attachments.download', [$case->id, $media->id]),
+                        'is_image' => str_starts_with($media->mime_type, 'image/'),
+                        'thumb_url' => str_starts_with($media->mime_type, 'image/') ? $media->getUrl('thumb') : null,
                     ];
                 }),
                 'tasks' => $case->tasks->map(function ($task) {

@@ -49,6 +49,68 @@ const submitNote = () => {
     });
 };
 
+// Attachment Management
+const isDragging = ref(false);
+const attachmentForm = useForm({
+    files: [],
+});
+const fileInputRef = ref(null);
+const confirmDeleteAttachment = ref(null);
+
+const onDragOver = (e) => {
+    e.preventDefault();
+    isDragging.value = true;
+};
+
+const onDragLeave = () => {
+    isDragging.value = false;
+};
+
+const onDrop = (e) => {
+    e.preventDefault();
+    isDragging.value = false;
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    if (droppedFiles.length > 0) {
+        uploadFiles(droppedFiles);
+    }
+};
+
+const onFileSelected = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    if (selectedFiles.length > 0) {
+        uploadFiles(selectedFiles);
+    }
+    e.target.value = '';
+};
+
+const uploadFiles = (files) => {
+    attachmentForm.files = files;
+    attachmentForm.post(route('cases.attachments.store', props.case.id), {
+        forceFormData: true,
+        preserveScroll: true,
+        onSuccess: () => {
+            attachmentForm.reset();
+        },
+    });
+};
+
+const deleteAttachment = (attachmentId) => {
+    router.delete(route('cases.attachments.destroy', [props.case.id, attachmentId]), {
+        preserveScroll: true,
+        onSuccess: () => {
+            confirmDeleteAttachment.value = null;
+        },
+    });
+};
+
+const getFileIcon = (mimeType) => {
+    if (mimeType === 'application/pdf') return { icon: 'PDF', color: 'bg-red-100 text-red-600' };
+    if (mimeType.includes('word') || mimeType.includes('document')) return { icon: 'DOC', color: 'bg-blue-100 text-blue-600' };
+    if (mimeType.includes('excel') || mimeType.includes('spreadsheet')) return { icon: 'XLS', color: 'bg-emerald-100 text-emerald-600' };
+    if (mimeType.startsWith('image/')) return { icon: 'IMG', color: 'bg-purple-100 text-purple-600' };
+    return { icon: 'FILE', color: 'bg-stone-100 text-stone-600' };
+};
+
 // Case Management
 const confirmDeleteCase = ref(false);
 const deleteCase = () => {
@@ -199,6 +261,116 @@ const deleteCase = () => {
                                         {{ session.decision }}
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Attachments Section -->
+                <div class="bg-white rounded-2xl border border-stone-200/80 shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-stone-100 flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-stone-800 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                            مرفقات القضية
+                            <span v-if="legalCase.attachments?.length" class="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">{{ legalCase.attachments.length }}</span>
+                        </h3>
+                        <button @click="fileInputRef?.click()" class="text-sm font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors">
+                            + رفع مرفق
+                        </button>
+                        <input ref="fileInputRef" type="file" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.gif" class="hidden" @change="onFileSelected" />
+                    </div>
+
+                    <!-- Drag & Drop Zone -->
+                    <div
+                        class="mx-6 mt-6 mb-4 border-2 border-dashed rounded-xl p-6 text-center transition-all duration-200 cursor-pointer"
+                        :class="isDragging ? 'border-indigo-400 bg-indigo-50/60 scale-[1.01]' : 'border-stone-200 bg-stone-50/50 hover:border-stone-300 hover:bg-stone-50'"
+                        @dragover="onDragOver"
+                        @dragleave="onDragLeave"
+                        @drop="onDrop"
+                        @click="fileInputRef?.click()"
+                    >
+                        <div class="flex flex-col items-center gap-2">
+                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center transition-colors" :class="isDragging ? 'bg-indigo-100' : 'bg-stone-100'">
+                                <svg class="w-6 h-6 transition-colors" :class="isDragging ? 'text-indigo-500' : 'text-stone-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                            </div>
+                            <p class="text-sm font-semibold" :class="isDragging ? 'text-indigo-600' : 'text-stone-600'">
+                                {{ isDragging ? 'أفلت الملفات هنا...' : 'اسحب وأفلت الملفات هنا' }}
+                            </p>
+                            <p class="text-xs text-stone-400">أو اضغط لاختيار الملفات • PDF, DOC, XLS, صور • حتى 50MB</p>
+                        </div>
+                    </div>
+
+                    <!-- Upload Progress -->
+                    <div v-if="attachmentForm.processing" class="mx-6 mb-4">
+                        <div class="flex items-center gap-3 p-3 bg-indigo-50 rounded-xl border border-indigo-100">
+                            <svg class="w-5 h-5 text-indigo-500 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <div class="flex-1">
+                                <p class="text-sm font-semibold text-indigo-700">جارٍ رفع المرفقات...</p>
+                                <div class="w-full bg-indigo-200 rounded-full h-1.5 mt-1.5">
+                                    <div class="bg-indigo-600 h-1.5 rounded-full transition-all duration-300" :style="{ width: attachmentForm.progress?.percentage + '%' || '0%' }"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Error -->
+                    <div v-if="attachmentForm.errors.files || attachmentForm.errors['files.0']" class="mx-6 mb-4">
+                        <div class="p-3 bg-red-50 rounded-xl border border-red-100 text-sm text-red-600 font-semibold">
+                            {{ attachmentForm.errors.files || attachmentForm.errors['files.0'] }}
+                        </div>
+                    </div>
+
+                    <!-- Attachments List -->
+                    <div v-if="!legalCase.attachments?.length && !attachmentForm.processing" class="p-8 text-center bg-stone-50/50">
+                        <div class="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
+                        </div>
+                        <p class="text-stone-600 font-semibold">لا توجد مرفقات</p>
+                        <p class="text-sm text-stone-400 mt-1">قم برفع الملفات لإرفاقها بهذه القضية</p>
+                    </div>
+
+                    <div v-else class="p-6 pt-2 space-y-2">
+                        <div
+                            v-for="attachment in legalCase.attachments"
+                            :key="attachment.id"
+                            class="flex items-center gap-3 p-3 bg-stone-50 border border-stone-200/80 rounded-xl hover:shadow-md transition-all group"
+                        >
+                            <!-- File Icon -->
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-xs font-black" :class="getFileIcon(attachment.mime_type).color">
+                                {{ getFileIcon(attachment.mime_type).icon }}
+                            </div>
+
+                            <!-- File Info -->
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-bold text-stone-800 truncate" :title="attachment.file_name">{{ attachment.file_name }}</p>
+                                <div class="flex items-center gap-2 mt-0.5">
+                                    <span class="text-[11px] text-stone-400">{{ attachment.human_readable_size }}</span>
+                                    <span class="text-stone-300">•</span>
+                                    <span class="text-[11px] text-stone-400">{{ attachment.uploader_name }}</span>
+                                    <span class="text-stone-300">•</span>
+                                    <span class="text-[11px] text-stone-400" dir="ltr">{{ attachment.created_at }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <a
+                                    :href="attachment.download_url"
+                                    class="p-2 text-stone-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    title="تحميل"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                </a>
+                                <button
+                                    @click="confirmDeleteAttachment = attachment.id"
+                                    class="p-2 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    title="حذف"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -370,6 +542,25 @@ const deleteCase = () => {
                         <div class="flex gap-3">
                             <button @click="confirmDeleteSession = null" class="flex-1 px-4 py-3 border border-stone-200 rounded-xl text-sm font-semibold text-stone-600 hover:bg-stone-50">إلغاء</button>
                             <button @click="deleteSession(confirmDeleteSession)" class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold">نعم، احذف</button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
+        <!-- Attachment Delete Confirmation Modal -->
+        <Teleport to="body">
+            <Transition enter-active-class="transition-all duration-200" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition-all duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <div v-if="confirmDeleteAttachment" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" @click.self="confirmDeleteAttachment = null">
+                    <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+                        <div class="w-14 h-14 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-stone-800 text-center mb-2">حذف المرفق</h3>
+                        <p class="text-sm text-stone-500 text-center mb-6">هل أنت متأكد من حذف هذا المرفق؟ لا يمكن التراجع عن هذا الإجراء.</p>
+                        <div class="flex gap-3">
+                            <button @click="confirmDeleteAttachment = null" class="flex-1 px-4 py-3 border border-stone-200 rounded-xl text-sm font-semibold text-stone-600 hover:bg-stone-50">إلغاء</button>
+                            <button @click="deleteAttachment(confirmDeleteAttachment)" class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold">نعم، احذف</button>
                         </div>
                     </div>
                 </div>
