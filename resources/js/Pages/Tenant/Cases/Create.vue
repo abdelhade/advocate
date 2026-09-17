@@ -12,7 +12,7 @@ const form = useForm({
     title: '',
     client_id: new URLSearchParams(window.location.search).get('client_id') || '',
     case_type: '',
-    court: '',
+    court_name: '',
     status: 'active',
     opponent_name: '',
     opponent_lawyer: '',
@@ -141,23 +141,28 @@ const submit = () => {
                                     v-model="form.status"
                                     required
                                     class="w-full px-4 py-3 rounded-xl border border-stone-300 bg-stone-50 text-stone-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    :class="{ 'border-red-500 ring-1 ring-red-500': form.errors.status }"
                                 >
                                     <option value="active">جارية</option>
-                                    <option value="postponed">مؤجلة</option>
-                                    <option value="judged">محكوم بها</option>
+                                    <option value="suspended">معلقة / مؤجلة</option>
+                                    <option value="won">محكوم بها (لصالحنا)</option>
+                                    <option value="lost">محكوم بها (ضدنا)</option>
                                     <option value="closed">مغلقة</option>
                                 </select>
+                                <p v-if="form.errors.status" class="mt-1.5 text-sm text-red-600">{{ form.errors.status }}</p>
                             </div>
 
                             <!-- Court -->
                             <div>
-                                <label for="court" class="block text-sm font-semibold text-stone-700 mb-2">المحكمة المختصة</label>
+                                <label for="court_name" class="block text-sm font-semibold text-stone-700 mb-2">المحكمة المختصة</label>
                                 <input
-                                    id="court"
+                                    id="court_name"
                                     type="text"
-                                    v-model="form.court"
+                                    v-model="form.court_name"
                                     class="w-full px-4 py-3 rounded-xl border border-stone-300 bg-stone-50 text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                    :class="{ 'border-red-500 ring-1 ring-red-500': form.errors.court_name }"
                                 />
+                                <p v-if="form.errors.court_name" class="mt-1.5 text-sm text-red-600">{{ form.errors.court_name }}</p>
                             </div>
 
                             <!-- Opponent Name -->

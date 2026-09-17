@@ -218,7 +218,8 @@ const deleteCase = () => {
                         </button>
                     </div>
 
-                    <div v-if="legalCase.sessions.length === 0" class="p-8 text-center bg-stone-50/50">
+                    <!-- Empty State -->
+                    <div v-if="!legalCase.sessions || legalCase.sessions.length === 0" class="p-8 text-center bg-stone-50/50">
                         <div class="w-16 h-16 rounded-2xl bg-stone-100 flex items-center justify-center mx-auto mb-4">
                             <svg class="w-8 h-8 text-stone-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
@@ -271,8 +272,8 @@ const deleteCase = () => {
                     <div class="p-6 border-b border-stone-100 flex items-center justify-between">
                         <h3 class="text-lg font-bold text-stone-800 flex items-center gap-2">
                             <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>
-                            مرفقات القضية
-                            <span v-if="legalCase.attachments?.length" class="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">{{ legalCase.attachments.length }}</span>
+                            <span class="text-base font-bold text-stone-800">مرفقات القضية</span>
+                            <span v-if="legalCase.attachments?.length" class="text-xs font-bold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">{{ legalCase.attachments?.length }}</span>
                         </h3>
                         <button @click="fileInputRef?.click()" class="text-sm font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors">
                             + رفع مرفق
@@ -406,7 +407,7 @@ const deleteCase = () => {
                     
                     <!-- Notes List -->
                     <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
-                        <div v-if="legalCase.notes.length === 0" class="text-center py-8">
+                        <div v-if="!legalCase.notes || legalCase.notes.length === 0" class="text-center py-8">
                             <p class="text-stone-400 text-sm">لا توجد ملاحظات</p>
                         </div>
                         <div v-for="note in legalCase.notes" :key="note.id" class="bg-white p-3 rounded-xl border border-stone-200/60 shadow-sm">

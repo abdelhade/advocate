@@ -91,11 +91,21 @@ class CaseController extends Controller
             'status' => ['required', 'string', 'in:active,suspended,won,lost,closed'],
             'internal_number' => ['nullable', 'string', 'max:191'],
             'reminder_at' => ['nullable', 'date'],
+            'opponent_name' => ['nullable', 'string', 'max:255'],
+            'opponent_lawyer' => ['nullable', 'string', 'max:255'],
         ]);
 
         $validated['primary_lawyer_id'] = Auth::id();
 
-        LegalCase::create($validated);
+        $case = LegalCase::create($validated);
+
+        if (!empty($validated['opponent_name'])) {
+            $case->parties()->create([
+                'name' => $validated['opponent_name'],
+                'party_type' => 'opponent',
+                'lawyer_name' => $validated['opponent_lawyer'] ?? null,
+            ]);
+        }
 
         return redirect()->route('cases.index')
             ->with('success', 'تم إضافة القضية بنجاح.');
@@ -247,9 +257,21 @@ class CaseController extends Controller
             'status' => ['required', 'string', 'in:active,suspended,won,lost,closed'],
             'internal_number' => ['nullable', 'string', 'max:191'],
             'reminder_at' => ['nullable', 'date'],
+            'opponent_name' => ['nullable', 'string', 'max:255'],
+            'opponent_lawyer' => ['nullable', 'string', 'max:255'],
         ]);
 
         $case->update($validated);
+
+        if (!empty($validated['opponent_name'])) {
+            $case->parties()->updateOrCreate(
+                ['party_type' => 'opponent'],
+                [
+                    'name' => $validated['opponent_name'],
+                    'lawyer_name' => $validated['opponent_lawyer'] ?? null,
+                ]
+            );
+        }
 
         return redirect()->route('cases.index')
             ->with('success', 'تم تحديث القضية بنجاح.');
