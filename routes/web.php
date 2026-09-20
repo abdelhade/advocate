@@ -97,6 +97,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('central.login.submit');
 });
 
+// Named separately from tenant `dashboard` — Laravel keeps the FIRST name
+// registration, so a shared name would always resolve to a central domain (e.g. 127.0.0.1).
 Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
     $user = $request->user();
 
@@ -115,7 +117,7 @@ Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
     }
 
     return redirect()->route('central.home');
-})->middleware('auth')->name('dashboard');
+})->middleware('auth')->name('central.dashboard');
 
 
 // Admin Auth (Guest)

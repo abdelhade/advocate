@@ -16,26 +16,28 @@ return Application::configure(basePath: dirname(__DIR__))
                 config('tenancy.central_domains', ['localhost'])
             )));
 
-            // Named routes keep the LAST registration — bind APP_URL host last
-            // so route()/Ziggy don't resolve to 127.0.0.1 in production.
+            // Laravel keeps the FIRST registration for a given route name
+            // (see RouteCollection::addLookups). Prefer APP_URL host among centrals,
+            // and register tenant routes before central so shared names (if any)
+            // resolve to the tenant portal — never 127.0.0.1.
             $appHost = strtolower((string) (parse_url((string) config('app.url'), PHP_URL_HOST) ?: ''));
             if ($appHost !== '') {
                 $centralDomains = array_values(array_unique([
-                    ...array_filter($centralDomains, fn (string $d) => strtolower($d) !== $appHost),
                     $appHost,
+                    ...array_filter($centralDomains, fn (string $d) => strtolower($d) !== $appHost),
                 ]));
-            }
-
-            foreach ($centralDomains as $domain) {
-                Route::middleware('web')
-                    ->domain($domain)
-                    ->group(base_path('routes/web.php'));
             }
 
             foreach (TenantUrl::availableDomains() as $baseDomain) {
                 Route::middleware('web')
                     ->domain('{tenant_slug}.'.$baseDomain)
                     ->group(base_path('routes/tenant.php'));
+            }
+
+            foreach ($centralDomains as $domain) {
+                Route::middleware('web')
+                    ->domain($domain)
+                    ->group(base_path('routes/web.php'));
             }
         },
     )

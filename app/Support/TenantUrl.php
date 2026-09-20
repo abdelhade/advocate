@@ -36,9 +36,11 @@ class TenantUrl
         $domains = config('tenancy.available_domains', []);
         $base = self::baseDomain();
 
+        // Base domain first — Laravel/Ziggy keep the first named-route registration.
         $merged = array_filter(array_unique(array_merge(
+            [$base],
             is_array($domains) ? $domains : [],
-            [$base, 'jalsateg.com', 'localhost']
+            ['jalsateg.com', 'localhost']
         )));
 
         return array_values(array_map('strtolower', $merged));
