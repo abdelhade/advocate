@@ -4,12 +4,17 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Client;
+use App\Services\PlanLimitService;
+use App\Services\TenantContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 
 class ClientController extends Controller
 {
+    public function __construct(private PlanLimitService $planLimits)
+    {
+    }
     public function index(Request $request)
     {
         Gate::authorize('viewAny', Client::class);
@@ -75,6 +80,10 @@ class ClientController extends Controller
     public function store(Request $request)
     {
         Gate::authorize('create', Client::class);
+
+        $tenant = app(TenantContext::class)->get() ?? auth()->user()?->currentTenant();
+        abort_unless($tenant, 403);
+        $this->planLimits->assertCanAddClient($tenant);
 
         $validated = $request->validate([
             'type' => ['nullable', 'in:individual,company,organization'],

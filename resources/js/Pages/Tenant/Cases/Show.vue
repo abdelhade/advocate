@@ -1,6 +1,6 @@
 <script setup>
 import TenantLayout from '@/Layouts/TenantLayout.vue';
-import { Head, Link, useForm, router } from '@inertiajs/vue3';
+import { Head, Link, useForm, router, usePage } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 
 const props = defineProps({
@@ -8,6 +8,7 @@ const props = defineProps({
 });
 
 const legalCase = computed(() => props.case);
+const canManageDocuments = computed(() => !!usePage().props.auth?.active_tenant?.plan?.features?.documents);
 
 // Session Management
 const showAddSessionModal = ref(false);
@@ -268,7 +269,7 @@ const deleteCase = () => {
                 </div>
 
                 <!-- Attachments Section -->
-                <div class="bg-white rounded-2xl border border-stone-200/80 shadow-sm overflow-hidden">
+                <div v-if="canManageDocuments" class="bg-white rounded-2xl border border-stone-200/80 shadow-sm overflow-hidden">
                     <div class="p-6 border-b border-stone-100 flex items-center justify-between">
                         <h3 class="text-lg font-bold text-stone-800 flex items-center gap-2">
                             <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path></svg>

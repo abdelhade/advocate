@@ -61,6 +61,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\IdentifyTenant::class,
         ]);
 
+        $middleware->alias([
+            'plan.feature' => \App\Http\Middleware\EnsurePlanFeature::class,
+        ]);
+
         // auth may run before IdentifyTenant — build login URL from the host slug
         $middleware->redirectGuestsTo(function (Request $request) {
             return TenantUrl::loginUrl($request);

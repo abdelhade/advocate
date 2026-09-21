@@ -37,9 +37,9 @@ const plans = [
             { text: '200 موكل', included: true },
             { text: '3,000 قضية', included: true },
             { text: 'إدارة المهام', included: true },
-            { text: 'إدارة الفوترة والأتعاب', included: false },
-            { text: 'إدارة المستندات والتوثيق', included: false },
-            { text: 'بوابة الموكلين', included: false },
+            { text: 'إدارة الفوترة والأتعاب', included: true },
+            { text: 'إدارة المستندات والتوثيق', included: true },
+            { text: 'بوابة الموكلين', included: true },
         ],
         buttonText: 'اشترك في الخطة الاحترافية',
         buttonClass: 'bg-red-700 hover:bg-red-800 text-white shadow-xl shadow-red-700/20',
@@ -286,19 +286,19 @@ const faqs = [
                             <tr>
                                 <td class="p-5">إدارة الفوترة والأتعاب</td>
                                 <td class="p-5 text-center text-stone-300">✕ غير شاملة</td>
-                                <td class="p-5 text-center bg-red-50/20 text-stone-300">✕ غير شاملة</td>
+                                <td class="p-5 text-center bg-red-50/20 text-emerald-700 font-extrabold">✓ شاملة</td>
                                 <td class="p-5 text-center text-emerald-700 font-extrabold">✓ شاملة</td>
                             </tr>
                             <tr>
                                 <td class="p-5">إدارة المستندات والتوثيق</td>
                                 <td class="p-5 text-center text-stone-300">✕ غير شاملة</td>
-                                <td class="p-5 text-center bg-red-50/20 text-stone-300">✕ غير شاملة</td>
+                                <td class="p-5 text-center bg-red-50/20 text-emerald-700 font-extrabold">✓ شاملة</td>
                                 <td class="p-5 text-center text-emerald-700 font-extrabold">✓ شاملة</td>
                             </tr>
                             <tr>
                                 <td class="p-5">بوابة الموكلين</td>
                                 <td class="p-5 text-center text-stone-300">✕ غير شاملة</td>
-                                <td class="p-5 text-center bg-red-50/20 text-stone-300">✕ غير شاملة</td>
+                                <td class="p-5 text-center bg-red-50/20 text-emerald-700 font-extrabold">✓ شاملة</td>
                                 <td class="p-5 text-center text-emerald-700 font-extrabold">✓ شاملة</td>
                             </tr>
                         </tbody>

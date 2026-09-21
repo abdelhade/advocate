@@ -519,8 +519,8 @@ const displayStats = computed(() => {
                                     <li class="flex items-center gap-2.5 text-blue-400 font-bold">✓ 10 مستخدمين</li>
                                     <li class="flex items-center gap-2.5">✓ 200 موكل</li>
                                     <li class="flex items-center gap-2.5">✓ 3,000 قضية</li>
-                                    <li class="flex items-center gap-2.5">✓ إدارة المهام</li>
-                                    <li class="flex items-center gap-2.5 text-slate-500 line-through">الفوترة وبوابة الموكلين</li>
+                                    <li class="flex items-center gap-2.5">✓ إدارة المهام والفوترة والمستندات</li>
+                                    <li class="flex items-center gap-2.5 text-blue-400 font-bold">✓ بوابة الموكلين</li>
                                 </ul>
                             </div>
                             <Link href="/register" class="w-full text-center px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-blue-950/50">

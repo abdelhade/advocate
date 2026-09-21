@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Client;
 use App\Models\CaseType;
 use App\Models\LegalCase;
+use App\Services\PlanLimitService;
 use App\Services\TenantContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +15,9 @@ use Inertia\Inertia;
 
 class CaseController extends Controller
 {
+    public function __construct(private PlanLimitService $planLimits)
+    {
+    }
     public function index(Request $request)
     {
         Gate::authorize('viewAny', LegalCase::class);
@@ -91,7 +95,11 @@ class CaseController extends Controller
     {
         Gate::authorize('create', LegalCase::class);
 
-        $tenantId = app(TenantContext::class)->id();
+        $tenant = app(TenantContext::class)->get() ?? auth()->user()?->currentTenant();
+        abort_unless($tenant, 403);
+        $this->planLimits->assertCanAddCase($tenant);
+
+        $tenantId = $tenant->id;
 
         $validated = $request->validate([
             'case_number' => ['required', 'string', 'max:191'],

@@ -96,16 +96,19 @@ class IdentifyTenant
 
         $daysLeft = $expiresAt ? max(0, (int) ceil(now()->diffInSeconds($expiresAt, false) / 86400)) : 0;
 
+        $planPayload = app(\App\Services\PlanLimitService::class)->inertiaPayload($tenant);
+
         Inertia::share([
             'auth.active_tenant' => [
                 'id' => $tenant->id,
                 'name' => $tenant->name,
                 'slug' => $tenant->slug,
                 'status' => $tenant->status,
-                'is_trial' => $isTrial,
+                'is_trial' => $isTrial || $planPayload['is_trialing'],
                 'days_left' => $daysLeft,
                 'start_date' => $tenant->created_at ? $tenant->created_at->format('Y-m-d') : null,
                 'expires_at' => $expiresAt ? $expiresAt->format('Y-m-d') : null,
+                'plan' => $planPayload,
             ],
             'auth.user_tenants' => function () use ($user) {
                 return $user->tenants()

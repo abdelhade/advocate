@@ -26,7 +26,7 @@ class SubscriptionService
             throw new \RuntimeException('لا توجد خطط اشتراك. شغّل SubscriptionPlanSeeder أولاً.');
         }
 
-        return Subscription::create([
+        $subscription = Subscription::create([
             'id' => (string) Str::uuid(),
             'tenant_id' => $tenant->id,
             'plan_id' => $plan->id,
@@ -36,6 +36,14 @@ class SubscriptionService
             'ends_at' => now()->addDays(self::TRIAL_DAYS),
             'trial_ends_at' => now()->addDays(self::TRIAL_DAYS),
         ]);
+
+        $settings = $tenant->settings ?? [];
+        $settings['expires_at'] = $subscription->ends_at->toDateTimeString();
+        $settings['plan_slug'] = $plan->slug;
+        $settings['billing_period'] = 'yearly';
+        $tenant->update(['settings' => $settings]);
+
+        return $subscription;
     }
 
     public function assignPlan(

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Tenant;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\PlanLimitService;
 use App\Services\TenantPermissionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -12,8 +13,10 @@ use Inertia\Inertia;
 
 class TenantUserController extends Controller
 {
-    public function __construct(private TenantPermissionService $permissions)
-    {
+    public function __construct(
+        private TenantPermissionService $permissions,
+        private PlanLimitService $planLimits,
+    ) {
     }
 
     public function index()
@@ -89,6 +92,8 @@ class TenantUserController extends Controller
         if ($existingInTenant) {
             return back()->withErrors(['email' => 'هذا البريد مضاف بالفعل إلى فريق هذا المكتب.']);
         }
+
+        $this->planLimits->assertCanAddUser($tenant);
 
         $user = User::where('email', $request->email)->first();
 

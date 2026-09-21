@@ -80,24 +80,30 @@ Route::middleware('auth')->group(function () {
     Route::post('cases/{case}/sessions', [SessionController::class, 'store'])->name('cases.sessions.store');
     Route::delete('cases/{case}/sessions/{session}', [SessionController::class, 'destroy'])->name('cases.sessions.destroy');
 
-    Route::post('cases/{case}/attachments', [CaseAttachmentController::class, 'store'])->name('cases.attachments.store');
-    Route::get('cases/{case}/attachments/{media}/download', [CaseAttachmentController::class, 'download'])->name('cases.attachments.download');
-    Route::delete('cases/{case}/attachments/{media}', [CaseAttachmentController::class, 'destroy'])->name('cases.attachments.destroy');
+    Route::middleware('plan.feature:documents')->group(function () {
+        Route::post('cases/{case}/attachments', [CaseAttachmentController::class, 'store'])->name('cases.attachments.store');
+        Route::get('cases/{case}/attachments/{media}/download', [CaseAttachmentController::class, 'download'])->name('cases.attachments.download');
+        Route::delete('cases/{case}/attachments/{media}', [CaseAttachmentController::class, 'destroy'])->name('cases.attachments.destroy');
 
-    Route::resource('tasks', TaskController::class)->except(['create', 'edit', 'show']);
-    Route::patch('tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
+        Route::post('documents', [DocumentController::class, 'store'])->name('documents.store');
+        Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
+    });
 
-    Route::resource('invoices', InvoiceController::class)->except(['edit', 'update']);
-    Route::resource('payments', PaymentController::class)->only(['index', 'store', 'destroy']);
-    Route::resource('expenses', ExpenseController::class)->only(['index', 'store', 'destroy']);
+    Route::middleware('plan.feature:tasks')->group(function () {
+        Route::resource('tasks', TaskController::class)->except(['create', 'edit', 'show']);
+        Route::patch('tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
+    });
+
+    Route::middleware('plan.feature:billing')->group(function () {
+        Route::resource('invoices', InvoiceController::class)->except(['edit', 'update']);
+        Route::resource('payments', PaymentController::class)->only(['index', 'store', 'destroy']);
+        Route::resource('expenses', ExpenseController::class)->only(['index', 'store', 'destroy']);
+    });
 
     Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
 
     Route::get('billing', [TenantBillingController::class, 'index'])->name('tenant.billing.index');
     Route::get('billing/invoices/{invoice}', [TenantBillingController::class, 'showInvoice'])->name('tenant.billing.show');
-
-    Route::post('documents', [DocumentController::class, 'store'])->name('documents.store');
-    Route::get('documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
