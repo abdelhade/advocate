@@ -474,7 +474,7 @@ const displayStats = computed(() => {
                             >
                                 <span>دفع سنوي</span>
                                 <span class="px-2 py-0.5 text-[10px] font-black rounded-md" :class="isAnnualPricing ? 'bg-white text-blue-900' : 'bg-blue-500/20 text-blue-400'">
-                                    توفير حتى 40%
+                                    شهرين مجاناً
                                 </span>
                             </button>
                         </div>
@@ -493,8 +493,9 @@ const displayStats = computed(() => {
                                 <ul class="space-y-3 mb-8 text-xs font-semibold text-slate-300">
                                     <li class="flex items-center gap-2.5">✓ 1 مستخدم (محامي واحد)</li>
                                     <li class="flex items-center gap-2.5">✓ 10 موكلين</li>
-                                    <li class="flex items-center gap-2.5 text-slate-500 line-through">إدارة الفوترة والمطالبات</li>
-                                    <li class="flex items-center gap-2.5 text-slate-500 line-through">تتبع المصروفات والأتعاب</li>
+                                    <li class="flex items-center gap-2.5">✓ 100 قضية</li>
+                                    <li class="flex items-center gap-2.5 text-slate-500 line-through">إدارة المهام</li>
+                                    <li class="flex items-center gap-2.5 text-slate-500 line-through">الفوترة وبوابة الموكلين</li>
                                 </ul>
                             </div>
                             <Link href="/register" class="w-full text-center px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs transition">
@@ -511,14 +512,15 @@ const displayStats = computed(() => {
                                 <h3 class="text-xl font-bold text-white mb-2">الاحترافية</h3>
                                 <p class="text-xs text-slate-400 mb-6">للمكاتب المتوسطة والمتنامية</p>
                                 <div class="mb-6 p-4 rounded-2xl bg-[#04070e] border border-slate-800 text-right">
-                                    <span class="text-4xl font-black text-white">{{ isAnnualPricing ? '5,000' : '650' }}</span>
+                                    <span class="text-4xl font-black text-white">{{ isAnnualPricing ? '1,560' : '156' }}</span>
                                     <span class="text-xs text-slate-400 mr-1">ج.م / {{ isAnnualPricing ? 'سنوياً' : 'شهرياً' }}</span>
                                 </div>
                                 <ul class="space-y-3 mb-8 text-xs font-semibold text-slate-200">
-                                    <li class="flex items-center gap-2.5 text-blue-400 font-bold">✓ 5 مستخدمين</li>
-                                    <li class="flex items-center gap-2.5">✓ 100 موكل</li>
-                                    <li class="flex items-center gap-2.5">✓ كامل خصائص الفوترة والمطالبات</li>
-                                    <li class="flex items-center gap-2.5">✓ تسجيل وتتبع المصروفات</li>
+                                    <li class="flex items-center gap-2.5 text-blue-400 font-bold">✓ 10 مستخدمين</li>
+                                    <li class="flex items-center gap-2.5">✓ 200 موكل</li>
+                                    <li class="flex items-center gap-2.5">✓ 3,000 قضية</li>
+                                    <li class="flex items-center gap-2.5">✓ إدارة المهام</li>
+                                    <li class="flex items-center gap-2.5 text-slate-500 line-through">الفوترة وبوابة الموكلين</li>
                                 </ul>
                             </div>
                             <Link href="/register" class="w-full text-center px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-blue-950/50">
@@ -532,14 +534,15 @@ const displayStats = computed(() => {
                                 <h3 class="text-xl font-bold text-white mb-2">المؤسسات</h3>
                                 <p class="text-xs text-slate-400 mb-6">للكيانات والمكاتب الكبرى</p>
                                 <div class="mb-6 p-4 rounded-2xl bg-[#04070e] border border-slate-800 text-right">
-                                    <span class="text-4xl font-black text-white">{{ isAnnualPricing ? '9,000' : '1,250' }}</span>
+                                    <span class="text-4xl font-black text-white">{{ isAnnualPricing ? '4,160' : '416' }}</span>
                                     <span class="text-xs text-slate-400 mr-1">ج.م / {{ isAnnualPricing ? 'سنوياً' : 'شهرياً' }}</span>
                                 </div>
                                 <ul class="space-y-3 mb-8 text-xs font-semibold text-slate-300">
-                                    <li class="flex items-center gap-2.5 text-blue-400 font-bold">✓ 25 مستخدم</li>
+                                    <li class="flex items-center gap-2.5 text-blue-400 font-bold">✓ 50 مستخدم</li>
                                     <li class="flex items-center gap-2.5">✓ 1,000 موكل</li>
-                                    <li class="flex items-center gap-2.5">✓ الفوترة والمطالبات والتقارير</li>
-                                    <li class="flex items-center gap-2.5 text-blue-400 font-bold">✓ دعم فني متواصل 24/7</li>
+                                    <li class="flex items-center gap-2.5">✓ 20,000 قضية</li>
+                                    <li class="flex items-center gap-2.5">✓ إدارة المهام والفوترة والمستندات</li>
+                                    <li class="flex items-center gap-2.5 text-blue-400 font-bold">✓ بوابة الموكلين</li>
                                 </ul>
                             </div>
                             <Link href="/register" class="w-full text-center px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs transition">

@@ -15,10 +15,11 @@ const plans = [
         features: [
             { text: '1 مستخدم (محامي واحد)', included: true },
             { text: '10 موكلين كحد أقصى', included: true },
-            { text: 'إدارة وتوثيق القضايا الأساسية', included: true },
+            { text: '100 قضية كحد أقصى', included: true },
+            { text: 'إدارة المهام', included: false },
             { text: 'إدارة الفوترة والأتعاب', included: false },
-            { text: 'تسجيل وتتبع المصروفات', included: false },
-            { text: 'دعم فني متواصل 24/7', included: false },
+            { text: 'إدارة المستندات والتوثيق', included: false },
+            { text: 'بوابة الموكلين', included: false },
         ],
         buttonText: 'ابدأ مجاناً الآن',
         buttonClass: 'bg-stone-100 hover:bg-stone-200 text-stone-800',
@@ -26,18 +27,19 @@ const plans = [
     {
         name: 'الاحترافية',
         tagline: 'المثالية لمكاتب المحاماة المتنامية',
-        monthlyPrice: 650,
-        annualPrice: 5000,
-        annualSavings: 'توفير 2,800 ج.م سنوياً',
+        monthlyPrice: 156,
+        annualPrice: 1560,
+        annualSavings: 'توفير 312 ج.م سنوياً (شهرين مجاناً)',
         badge: 'الأكثر شعبية 🚀',
         highlight: true,
         features: [
-            { text: '5 مستخدمين (فريق عمل)', included: true },
-            { text: '100 موكل', included: true },
-            { text: 'إدارة وتوثيق القضايا والجلسات', included: true },
-            { text: 'إدارة الفوترة وأقساط الأتعاب', included: true },
-            { text: 'تسجيل وتتبع المصروفات والمالية', included: true },
-            { text: 'دعم فني متواصل 24/7', included: false },
+            { text: '10 مستخدمين (فريق عمل)', included: true },
+            { text: '200 موكل', included: true },
+            { text: '3,000 قضية', included: true },
+            { text: 'إدارة المهام', included: true },
+            { text: 'إدارة الفوترة والأتعاب', included: false },
+            { text: 'إدارة المستندات والتوثيق', included: false },
+            { text: 'بوابة الموكلين', included: false },
         ],
         buttonText: 'اشترك في الخطة الاحترافية',
         buttonClass: 'bg-red-700 hover:bg-red-800 text-white shadow-xl shadow-red-700/20',
@@ -45,18 +47,19 @@ const plans = [
     {
         name: 'المؤسسات',
         tagline: 'لمكاتب وشركات المحاماة الكبيرة',
-        monthlyPrice: 1250,
-        annualPrice: 9000,
-        annualSavings: 'توفير 6,000 ج.م سنوياً',
+        monthlyPrice: 416,
+        annualPrice: 4160,
+        annualSavings: 'توفير 832 ج.م سنوياً (شهرين مجاناً)',
         badge: 'للمكاتب الكبيرة 💼',
         highlight: false,
         features: [
-            { text: '25 مستخدم (فريق كامل)', included: true },
+            { text: '50 مستخدم (فريق كامل)', included: true },
             { text: '1,000 موكل', included: true },
-            { text: 'إدارة وتوثيق القضايا والجلسات', included: true },
-            { text: 'إدارة الفوترة وأقساط الأتعاب', included: true },
-            { text: 'تسجيل وتتبع المصروفات والمالية', included: true },
-            { text: 'دعم فني 24/7 متواصل مخصص', included: true },
+            { text: '20,000 قضية', included: true },
+            { text: 'إدارة المهام', included: true },
+            { text: 'إدارة الفوترة والأتعاب', included: true },
+            { text: 'إدارة المستندات والتوثيق', included: true },
+            { text: 'بوابة الموكلين', included: true },
         ],
         buttonText: 'اشترك في خطة المؤسسات',
         buttonClass: 'bg-stone-900 hover:bg-stone-800 text-white shadow-lg',
@@ -147,7 +150,7 @@ const faqs = [
                     >
                         <span>دفع سنوي</span>
                         <span class="px-2 py-0.5 text-[10px] font-black rounded-full" :class="isAnnual ? 'bg-white text-red-800' : 'bg-red-100 text-red-700'">
-                            خصم حتى 40% 🔥
+                            شهرين مجاناً 🔥
                         </span>
                     </button>
                 </div>
@@ -247,44 +250,56 @@ const faqs = [
                             <tr>
                                 <td class="p-5 font-extrabold text-stone-900">السعر الشهري</td>
                                 <td class="p-5 text-center">0 ج.م</td>
-                                <td class="p-5 text-center bg-red-50/20 text-red-700 font-black">650 ج.م</td>
-                                <td class="p-5 text-center">1,250 ج.م</td>
+                                <td class="p-5 text-center bg-red-50/20 text-red-700 font-black">156 ج.م</td>
+                                <td class="p-5 text-center">416 ج.م</td>
                             </tr>
                             <tr>
                                 <td class="p-5 font-extrabold text-stone-900">السعر السنوي</td>
                                 <td class="p-5 text-center">0 ج.م</td>
-                                <td class="p-5 text-center bg-red-50/20 text-red-700 font-black">5,000 ج.م</td>
-                                <td class="p-5 text-center">9,000 ج.م</td>
+                                <td class="p-5 text-center bg-red-50/20 text-red-700 font-black">1,560 ج.م</td>
+                                <td class="p-5 text-center">4,160 ج.م</td>
                             </tr>
                             <tr>
                                 <td class="p-5">عدد المستخدمين (فريق العمل)</td>
                                 <td class="p-5 text-center">1 مستخدم</td>
-                                <td class="p-5 text-center bg-red-50/20 text-red-700">5 مستخدمين</td>
-                                <td class="p-5 text-center">25 مستخدم</td>
+                                <td class="p-5 text-center bg-red-50/20 text-red-700">10 مستخدمين</td>
+                                <td class="p-5 text-center">50 مستخدم</td>
                             </tr>
                             <tr>
                                 <td class="p-5">عدد الموكلين المسجلين</td>
                                 <td class="p-5 text-center">10 موكلين</td>
-                                <td class="p-5 text-center bg-red-50/20 text-red-700">100 موكل</td>
+                                <td class="p-5 text-center bg-red-50/20 text-red-700">200 موكل</td>
                                 <td class="p-5 text-center">1,000 موكل</td>
+                            </tr>
+                            <tr>
+                                <td class="p-5">عدد القضايا</td>
+                                <td class="p-5 text-center">100 قضية</td>
+                                <td class="p-5 text-center bg-red-50/20 text-red-700">3,000 قضية</td>
+                                <td class="p-5 text-center">20,000 قضية</td>
+                            </tr>
+                            <tr>
+                                <td class="p-5">إدارة المهام</td>
+                                <td class="p-5 text-center text-stone-300">✕ غير شاملة</td>
+                                <td class="p-5 text-center bg-red-50/20 text-emerald-700 font-extrabold">✓ شاملة</td>
+                                <td class="p-5 text-center text-emerald-700 font-extrabold">✓ شاملة</td>
                             </tr>
                             <tr>
                                 <td class="p-5">إدارة الفوترة والأتعاب</td>
                                 <td class="p-5 text-center text-stone-300">✕ غير شاملة</td>
-                                <td class="p-5 text-center bg-red-50/20 text-emerald-700 font-extrabold">✓ شاملة</td>
+                                <td class="p-5 text-center bg-red-50/20 text-stone-300">✕ غير شاملة</td>
                                 <td class="p-5 text-center text-emerald-700 font-extrabold">✓ شاملة</td>
                             </tr>
                             <tr>
-                                <td class="p-5">إدارة وتسجيل المصروفات</td>
+                                <td class="p-5">إدارة المستندات والتوثيق</td>
                                 <td class="p-5 text-center text-stone-300">✕ غير شاملة</td>
-                                <td class="p-5 text-center bg-red-50/20 text-emerald-700 font-extrabold">✓ شاملة</td>
+                                <td class="p-5 text-center bg-red-50/20 text-stone-300">✕ غير شاملة</td>
                                 <td class="p-5 text-center text-emerald-700 font-extrabold">✓ شاملة</td>
                             </tr>
                             <tr>
-                                <td class="p-5">الدعم الفني المتواصل</td>
-                                <td class="p-5 text-center text-stone-400">عبر البريد الإلكتروني</td>
-                                <td class="p-5 text-center bg-red-50/20 text-stone-700">دعم قياسي (ساعات العمل)</td>
-                                <td class="p-5 text-center text-red-700 font-black">✓ دعم فني 24/7 مخصص</td>
+                                <td class="p-5">بوابة الموكلين</td>
+                                <td class="p-5 text-center text-stone-300">✕ غير شاملة</td>
+                                <td class="p-5 text-center bg-red-50/20 text-stone-300">✕ غير شاملة</td>
+                                <td class="p-5 text-center text-emerald-700 font-extrabold">✓ شاملة</td>
                             </tr>
                         </tbody>
                     </table>
