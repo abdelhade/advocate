@@ -18,7 +18,13 @@ class CaseController extends Controller
     {
         Gate::authorize('viewAny', LegalCase::class);
 
-        $query = LegalCase::with('client')->latest();
+        $sortable = ['case_number', 'title', 'status', 'created_at'];
+        $sort = in_array($request->input('sort'), $sortable, true)
+            ? $request->input('sort')
+            : 'created_at';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+
+        $query = LegalCase::with('client');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -35,7 +41,7 @@ class CaseController extends Controller
             $query->where('case_type', $type);
         }
 
-        $cases = $query->paginate(25)->through(function ($case) {
+        $cases = $query->orderBy($sort, $direction)->paginate(25)->through(function ($case) {
             return [
                 'id' => $case->id,
                 'case_number' => $case->case_number,
@@ -48,9 +54,23 @@ class CaseController extends Controller
             ];
         });
 
+        $statusCounts = LegalCase::query()
+            ->selectRaw('status, count(*) as aggregate')
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
+        $stats = [
+            'total' => (int) $statusCounts->sum(),
+            'active' => (int) ($statusCounts['active'] ?? 0),
+            'postponed' => (int) ($statusCounts['postponed'] ?? $statusCounts['suspended'] ?? 0),
+            'judged' => (int) ($statusCounts['judged'] ?? (($statusCounts['won'] ?? 0) + ($statusCounts['lost'] ?? 0))),
+            'closed' => (int) ($statusCounts['closed'] ?? 0),
+        ];
+
         return Inertia::render('Tenant/Cases/Index', [
             'cases' => $cases,
-            'filters' => $request->only('search', 'status', 'case_type'),
+            'filters' => $request->only('search', 'status', 'case_type', 'sort', 'direction'),
+            'stats' => $stats,
         ]);
     }
 

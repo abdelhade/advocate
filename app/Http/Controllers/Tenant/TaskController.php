@@ -17,6 +17,12 @@ class TaskController extends Controller
     {
         $tenantId = auth()->user()->currentTenant()->id;
 
+        $sortable = ['title', 'due_date', 'priority', 'status', 'created_at'];
+        $sort = in_array($request->input('sort'), $sortable, true)
+            ? $request->input('sort')
+            : 'created_at';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+
         $query = Task::where('tenant_id', $tenantId)
             ->with(['case:id,title,case_number', 'assignee:id,name', 'creator:id,name']);
 
@@ -36,16 +42,30 @@ class TaskController extends Controller
             $query->where('title', 'like', '%' . $request->search . '%');
         }
 
-        $tasks = $query->latest()->paginate(15)->withQueryString();
+        $tasks = $query->orderBy($sort, $direction)->paginate(15)->withQueryString();
 
         $cases = LegalCase::where('tenant_id', $tenantId)->select('id', 'title', 'case_number')->get();
         $users = auth()->user()->currentTenant()->users()->select('users.id', 'users.name')->get();
+
+        $statusCounts = Task::where('tenant_id', $tenantId)
+            ->selectRaw('status, count(*) as aggregate')
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
+        $stats = [
+            'total' => (int) $statusCounts->sum(),
+            'pending' => (int) ($statusCounts['pending'] ?? 0),
+            'in_progress' => (int) ($statusCounts['in_progress'] ?? 0),
+            'completed' => (int) ($statusCounts['completed'] ?? 0),
+            'cancelled' => (int) ($statusCounts['cancelled'] ?? 0),
+        ];
 
         return Inertia::render('Tenant/Tasks/Index', [
             'tasks' => $tasks,
             'cases' => $cases,
             'users' => $users,
-            'filters' => $request->only(['status', 'priority', 'case_id', 'search']),
+            'stats' => $stats,
+            'filters' => $request->only(['status', 'priority', 'case_id', 'search', 'sort', 'direction']),
         ]);
     }
 

@@ -14,6 +14,12 @@ class AuditLogController extends Controller
     {
         $tenantId = auth()->user()->currentTenant()->id;
 
+        $sortable = ['created_at', 'action', 'entity_type'];
+        $sort = in_array($request->input('sort'), $sortable, true)
+            ? $request->input('sort')
+            : 'created_at';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+
         $query = AuditLog::where('tenant_id', $tenantId)
             ->with(['user:id,name,email']);
 
@@ -36,24 +42,37 @@ class AuditLogController extends Controller
             });
         }
 
-        $logs = $query->latest('created_at')->paginate(25)->withQueryString();
+        $logs = $query->orderBy($sort, $direction)->paginate(25)->withQueryString();
+
+        $actionCounts = AuditLog::where('tenant_id', $tenantId)
+            ->selectRaw('action, count(*) as aggregate')
+            ->groupBy('action')
+            ->pluck('aggregate', 'action');
+
+        $stats = [
+            'total' => (int) $actionCounts->sum(),
+            'created' => (int) ($actionCounts['created'] ?? 0),
+            'updated' => (int) ($actionCounts['updated'] ?? 0),
+            'deleted' => (int) ($actionCounts['deleted'] ?? 0),
+        ];
 
         $entityTypesMap = [
-            'App\Models\Client' => '👤 الموكلين',
-            'App\Models\LegalCase' => '⚖️ القضايا',
-            'App\Models\CourtSession' => '📅 الجلسات القضائية',
-            'App\Models\Document' => '📄 المستندات والوثائق',
-            'App\Models\Invoice' => '📜 الفواتير والأتعاب',
-            'App\Models\Payment' => '💳 سندات القبض',
-            'App\Models\Expense' => '💸 المصروفات',
-            'App\Models\Task' => '📋 المهام الأسبوعية',
-            'App\Models\User' => '👨‍⚖️ أعضاء الفريق',
+            'App\Models\Client' => 'الموكلين',
+            'App\Models\LegalCase' => 'القضايا',
+            'App\Models\CourtSession' => 'الجلسات القضائية',
+            'App\Models\Document' => 'المستندات والوثائق',
+            'App\Models\Invoice' => 'الفواتير والأتعاب',
+            'App\Models\Payment' => 'سندات القبض',
+            'App\Models\Expense' => 'المصروفات',
+            'App\Models\Task' => 'المهام',
+            'App\Models\User' => 'أعضاء الفريق',
         ];
 
         return Inertia::render('Tenant/AuditLogs/Index', [
             'logs' => $logs,
-            'filters' => $request->only(['action', 'entity_type', 'search']),
+            'filters' => $request->only(['action', 'entity_type', 'search', 'sort', 'direction']),
             'entityTypesMap' => $entityTypesMap,
+            'stats' => $stats,
         ]);
     }
 }

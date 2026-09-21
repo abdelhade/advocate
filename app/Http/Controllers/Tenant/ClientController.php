@@ -14,7 +14,13 @@ class ClientController extends Controller
     {
         Gate::authorize('viewAny', Client::class);
 
-        $query = Client::query()->latest();
+        $sortable = ['name', 'phone', 'created_at', 'type'];
+        $sort = in_array($request->input('sort'), $sortable, true)
+            ? $request->input('sort')
+            : 'created_at';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+
+        $query = Client::query();
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -24,7 +30,11 @@ class ClientController extends Controller
             });
         }
 
-        $clients = $query->paginate(25)->through(function ($client) {
+        if ($type = $request->input('type')) {
+            $query->where('type', $type);
+        }
+
+        $clients = $query->orderBy($sort, $direction)->paginate(25)->through(function ($client) {
             return [
                 'id' => $client->id,
                 'type' => $client->type,
@@ -36,9 +46,22 @@ class ClientController extends Controller
             ];
         });
 
+        $typeCounts = Client::query()
+            ->selectRaw('type, count(*) as aggregate')
+            ->groupBy('type')
+            ->pluck('aggregate', 'type');
+
+        $stats = [
+            'total' => (int) $typeCounts->sum(),
+            'individual' => (int) ($typeCounts['individual'] ?? 0),
+            'company' => (int) ($typeCounts['company'] ?? 0),
+            'organization' => (int) ($typeCounts['organization'] ?? 0),
+        ];
+
         return Inertia::render('Tenant/Clients/Index', [
             'clients' => $clients,
-            'filters' => $request->only('search'),
+            'filters' => $request->only('search', 'type', 'sort', 'direction'),
+            'stats' => $stats,
         ]);
     }
 

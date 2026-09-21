@@ -19,6 +19,12 @@ class InvoiceController extends Controller
     {
         $tenantId = auth()->user()->currentTenant()->id;
 
+        $sortable = ['invoice_number', 'total_amount', 'paid_amount', 'status', 'due_date', 'created_at'];
+        $sort = in_array($request->input('sort'), $sortable, true)
+            ? $request->input('sort')
+            : 'created_at';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+
         $query = Invoice::where('tenant_id', $tenantId)
             ->with(['client:id,name', 'case:id,title,case_number']);
 
@@ -39,7 +45,7 @@ class InvoiceController extends Controller
             });
         }
 
-        $invoices = $query->latest()->paginate(15)->withQueryString();
+        $invoices = $query->orderBy($sort, $direction)->paginate(15)->withQueryString();
 
         $stats = [
             'total_invoiced' => Invoice::where('tenant_id', $tenantId)->sum('total_amount'),
@@ -48,10 +54,13 @@ class InvoiceController extends Controller
             'invoices_count' => Invoice::where('tenant_id', $tenantId)->count(),
         ];
 
+        $clients = Client::where('tenant_id', $tenantId)->select('id', 'name')->orderBy('name')->get();
+
         return Inertia::render('Tenant/Invoices/Index', [
             'invoices' => $invoices,
             'stats' => $stats,
-            'filters' => $request->only(['status', 'client_id', 'search']),
+            'clients' => $clients,
+            'filters' => $request->only(['status', 'client_id', 'search', 'sort', 'direction']),
         ]);
     }
 

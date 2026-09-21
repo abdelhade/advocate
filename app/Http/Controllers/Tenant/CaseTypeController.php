@@ -26,12 +26,24 @@ class CaseTypeController extends Controller
     {
         $tenantId = $this->getTenantId();
 
-        $caseTypes = CaseType::where('tenant_id', $tenantId)
-            ->orderBy('name')
-            ->get();
+        $sortable = ['name', 'created_at'];
+        $sort = in_array($request->input('sort'), $sortable, true)
+            ? $request->input('sort')
+            : 'name';
+        $direction = $request->input('direction') === 'desc' ? 'desc' : 'asc';
+
+        $query = CaseType::where('tenant_id', $tenantId);
+
+        if ($search = $request->input('search')) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        $caseTypes = $query->orderBy($sort, $direction)->get();
 
         return Inertia::render('Tenant/CaseTypes/Index', [
             'caseTypes' => $caseTypes,
+            'stats' => ['total' => CaseType::where('tenant_id', $tenantId)->count()],
+            'filters' => $request->only(['search', 'sort', 'direction']),
         ]);
     }
 

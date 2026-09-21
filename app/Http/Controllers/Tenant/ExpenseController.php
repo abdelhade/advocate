@@ -16,6 +16,12 @@ class ExpenseController extends Controller
     {
         $tenantId = auth()->user()->currentTenant()->id;
 
+        $sortable = ['category', 'amount', 'expense_date', 'created_at'];
+        $sort = in_array($request->input('sort'), $sortable, true)
+            ? $request->input('sort')
+            : 'created_at';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+
         $query = Expense::where('tenant_id', $tenantId)
             ->with(['case:id,title,case_number', 'paidBy:id,name']);
 
@@ -28,19 +34,30 @@ class ExpenseController extends Controller
         }
 
         if ($request->filled('search')) {
-            $query->where('category', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('category', 'like', '%' . $request->search . '%')
+                  ->orWhereHas('case', function ($cq) use ($request) {
+                      $cq->where('title', 'like', '%' . $request->search . '%')
+                        ->orWhere('case_number', 'like', '%' . $request->search . '%');
+                  });
+            });
         }
 
-        $expenses = $query->latest()->paginate(15)->withQueryString();
+        $expenses = $query->orderBy($sort, $direction)->paginate(15)->withQueryString();
 
         $totalExpenses = Expense::where('tenant_id', $tenantId)->sum('amount');
+        $expensesCount = Expense::where('tenant_id', $tenantId)->count();
         $cases = LegalCase::where('tenant_id', $tenantId)->select('id', 'title', 'case_number')->get();
 
         return Inertia::render('Tenant/Expenses/Index', [
             'expenses' => $expenses,
             'totalExpenses' => $totalExpenses,
+            'stats' => [
+                'total_amount' => $totalExpenses,
+                'count' => $expensesCount,
+            ],
             'cases' => $cases,
-            'filters' => $request->only(['category', 'case_id', 'search']),
+            'filters' => $request->only(['category', 'case_id', 'search', 'sort', 'direction']),
         ]);
     }
 

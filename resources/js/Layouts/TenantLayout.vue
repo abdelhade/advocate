@@ -1,11 +1,15 @@
 <script setup>
+import Dropdown from '@/Components/Dropdown.vue';
+import DropdownLink from '@/Components/DropdownLink.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { ref, onMounted, computed } from 'vue';
 
 const page = usePage();
 const activeTenant = computed(() => page.props.auth?.active_tenant);
+const user = computed(() => page.props.auth?.user);
 
 const isSidebarOpen = ref(false);
+const notificationsOpen = ref(false);
 const deferredPrompt = ref(null);
 const canInstall = ref(false);
 const isDarkMode = ref(false);
@@ -58,13 +62,12 @@ const navigation = [
 
 <template>
     <div class="min-h-screen bg-stone-50 dark:bg-slate-950 text-stone-900 dark:text-slate-100 transition-colors" dir="rtl">
-        <!-- Sidebar -->
+        <!-- Sidebar: logo + nav only -->
         <aside
             class="fixed inset-y-0 right-0 z-50 w-72 bg-white dark:bg-slate-900 border-l border-stone-200/80 dark:border-slate-800 transition-transform duration-300 transform lg:translate-x-0 flex flex-col shadow-[rgba(0,0,0,0.02)_0px_0px_20px]"
             :class="{ 'translate-x-0': isSidebarOpen, 'translate-x-full': !isSidebarOpen }"
         >
-            <!-- Logo -->
-            <div class="h-20 flex items-center px-8 border-b border-stone-100/80 dark:border-slate-800 shrink-0">
+            <div class="h-16 lg:h-20 flex items-center px-6 lg:px-8 border-b border-stone-100/80 dark:border-slate-800 shrink-0">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-blue-700 flex items-center justify-center shadow-lg shadow-blue-900/30">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
@@ -76,7 +79,6 @@ const navigation = [
                 </div>
             </div>
 
-            <!-- Navigation -->
             <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
                 <Link
                     v-for="item in navigation"
@@ -84,10 +86,11 @@ const navigation = [
                     :href="item.href"
                     class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-200 group relative overflow-hidden"
                     :class="[
-                        item.active 
-                            ? 'text-blue-700 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 shadow-sm' 
+                        item.active
+                            ? 'text-blue-700 dark:text-blue-400 bg-blue-50/80 dark:bg-blue-950/60 shadow-sm'
                             : 'text-stone-500 dark:text-slate-400 hover:text-stone-800 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-slate-800'
                     ]"
+                    @click="isSidebarOpen = false"
                 >
                     <div v-if="item.active" class="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-blue-600 rounded-l-full"></div>
                     <svg class="w-5 h-5 transition-transform duration-200 group-hover:scale-110" :class="item.active ? 'text-blue-600 dark:text-blue-400' : 'text-stone-400 dark:text-slate-500 group-hover:text-stone-600 dark:group-hover:text-slate-300'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -97,87 +100,136 @@ const navigation = [
                 </Link>
             </nav>
 
-            <!-- User Profile & Subscription Info -->
-            <div class="p-6 border-t border-stone-100/80 dark:border-slate-800 bg-stone-50/50 dark:bg-slate-900/50">
+            <div class="p-4 border-t border-stone-100/80 dark:border-slate-800 space-y-2">
                 <button
                     v-if="canInstall"
                     @click="installApp"
-                    class="w-full mb-3 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-700 text-white rounded-xl text-xs font-black hover:bg-blue-800 transition-all shadow-md shadow-blue-900/30"
+                    class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-700 text-white rounded-xl text-xs font-black hover:bg-blue-800 transition-all shadow-md shadow-blue-900/30"
                 >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     تثبيت تطبيق جلسات
                 </button>
-                <div class="flex items-center gap-3 px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-stone-200/80 dark:border-slate-700 shadow-sm mb-2">
-                    <div class="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center text-blue-700 dark:text-blue-400 font-bold text-sm shrink-0">
-                        {{ $page.props.auth.user.name.charAt(0) }}
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-bold text-stone-800 dark:text-white truncate">{{ $page.props.auth.user.name }}</p>
-                        <p class="text-[11px] text-stone-400 dark:text-slate-400 truncate" dir="ltr">{{ $page.props.auth.user.email }}</p>
-                    </div>
-                </div>
-
-                <!-- Sidebar Subscription Validity Date -->
-                <div v-if="activeTenant?.expires_at" class="mt-2 text-center text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 px-3 py-1.5 rounded-xl flex items-center justify-center gap-1.5 shadow-sm">
+                <div
+                    v-if="activeTenant?.expires_at"
+                    class="text-center text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 px-3 py-1.5 rounded-xl flex items-center justify-center gap-1.5 shadow-sm"
+                >
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span>صالح حتى {{ activeTenant.expires_at }}</span>
-                </div>
-                <div class="flex gap-2">
-                    <Link :href="route('profile.edit')" class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-stone-600 dark:text-slate-300 hover:bg-stone-100 dark:hover:bg-slate-800 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        الملف
-                    </Link>
-                    <Link :href="route('logout')" method="post" as="button" class="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-red-600 dark:text-rose-400 hover:bg-red-50 dark:hover:bg-rose-950/40 transition-colors border border-transparent hover:border-red-100 dark:hover:border-rose-900/40">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                        خروج
-                    </Link>
                 </div>
             </div>
         </aside>
 
-        <!-- Overlay -->
         <div
             v-if="isSidebarOpen"
             class="fixed inset-0 bg-stone-900/40 dark:bg-slate-950/70 backdrop-blur-sm z-40 lg:hidden"
             @click="isSidebarOpen = false"
         ></div>
 
-        <!-- Main Content -->
         <div class="lg:pr-72 flex flex-col min-h-screen transition-all duration-300">
-            <!-- Mobile Header -->
-            <div class="sticky top-0 z-30 flex items-center justify-between h-16 px-4 bg-white dark:bg-slate-900 border-b border-stone-200/80 dark:border-slate-800 lg:hidden">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-lg bg-blue-700 flex items-center justify-center">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path></svg>
-                    </div>
-                    <span class="text-lg font-black text-stone-800 dark:text-white">منصة جلسات</span>
-                </div>
-                <button
-                    @click="isSidebarOpen = true"
-                    class="p-2 text-stone-500 dark:text-slate-400 rounded-xl hover:bg-stone-100 dark:hover:bg-slate-800"
-                >
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-                </button>
-            </div>
-
-            <!-- Page Header -->
-            <header class="bg-white/70 dark:bg-slate-900/80 backdrop-blur-xl border-b border-stone-200/60 dark:border-slate-800 sticky top-0 z-20 lg:top-0 lg:h-20 flex items-center">
-                <div class="w-full px-4 sm:px-6 lg:px-8 flex justify-between items-center py-4 lg:py-0">
-                    <h2 class="text-xl font-bold text-stone-800 dark:text-white flex items-center gap-2">
-                        <slot name="title" />
-                    </h2>
-                    <div class="flex items-center gap-3">
+            <!-- Unified top navbar -->
+            <header class="sticky top-0 z-30 h-16 lg:h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-stone-200/60 dark:border-slate-800 flex items-center">
+                <div class="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
                         <button
-                            @click.stop="toggleTheme"
                             type="button"
-                            class="p-2.5 rounded-xl text-stone-600 dark:text-slate-300 hover:text-stone-900 dark:hover:text-white bg-white dark:bg-slate-800 hover:bg-stone-50 dark:hover:bg-slate-700 transition-all flex items-center justify-center border border-stone-200 dark:border-slate-700 shadow-sm cursor-pointer"
-                            :title="isDarkMode ? 'التحويل للوضع المضيء' : 'التحويل للوضع الداكن'"
-                            :aria-label="isDarkMode ? 'التحويل للوضع المضيء' : 'التحويل للوضع الداكن'"
+                            @click="isSidebarOpen = true"
+                            class="lg:hidden p-2 rounded-xl text-stone-500 dark:text-slate-400 hover:bg-stone-100 dark:hover:bg-slate-800 shrink-0"
+                            aria-label="فتح القائمة"
                         >
-                            <svg v-if="isDarkMode" class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                            <svg v-else class="w-5 h-5 text-slate-700 dark:text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                         </button>
+                        <h2 class="text-lg lg:text-xl font-bold text-stone-800 dark:text-white truncate">
+                            <slot name="title" />
+                        </h2>
+                    </div>
+
+                    <div class="flex items-center gap-2 sm:gap-3 shrink-0">
                         <slot name="actions" />
+
+                        <!-- Notifications -->
+                        <div class="relative">
+                            <button
+                                type="button"
+                                @click="notificationsOpen = !notificationsOpen"
+                                class="relative p-2.5 rounded-xl text-stone-600 dark:text-slate-300 hover:text-stone-900 dark:hover:text-white bg-white dark:bg-slate-800 hover:bg-stone-50 dark:hover:bg-slate-700 border border-stone-200 dark:border-slate-700 shadow-sm transition-all"
+                                title="الإشعارات"
+                                aria-label="الإشعارات"
+                            >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                            </button>
+                            <div
+                                v-show="notificationsOpen"
+                                class="fixed inset-0 z-40"
+                                @click="notificationsOpen = false"
+                            ></div>
+                            <Transition
+                                enter-active-class="transition ease-out duration-200"
+                                enter-from-class="opacity-0 scale-95"
+                                enter-to-class="opacity-100 scale-100"
+                                leave-active-class="transition ease-in duration-75"
+                                leave-from-class="opacity-100 scale-100"
+                                leave-to-class="opacity-0 scale-95"
+                            >
+                                <div
+                                    v-show="notificationsOpen"
+                                    class="absolute left-0 z-50 mt-2 w-72 origin-top-left rounded-xl bg-white dark:bg-slate-800 shadow-lg ring-1 ring-black/5 dark:ring-white/10 overflow-hidden"
+                                >
+                                    <div class="px-4 py-3 border-b border-stone-100 dark:border-slate-700">
+                                        <p class="text-sm font-bold text-stone-800 dark:text-white">الإشعارات</p>
+                                    </div>
+                                    <div class="px-4 py-8 text-center">
+                                        <p class="text-sm text-stone-400 dark:text-slate-500">لا توجد إشعارات</p>
+                                    </div>
+                                </div>
+                            </Transition>
+                        </div>
+
+                        <!-- User dropdown -->
+                        <Dropdown align="left" width="48" content-classes="py-1 bg-white dark:bg-slate-800">
+                            <template #trigger>
+                                <button
+                                    type="button"
+                                    class="flex items-center gap-2 p-1.5 pe-2.5 rounded-xl bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 shadow-sm hover:bg-stone-50 dark:hover:bg-slate-700 transition-all"
+                                >
+                                    <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-950 flex items-center justify-center text-blue-700 dark:text-blue-400 font-bold text-sm shrink-0">
+                                        {{ user?.name?.charAt(0) }}
+                                    </div>
+                                    <span class="hidden sm:block text-sm font-bold text-stone-700 dark:text-slate-200 max-w-[100px] truncate">{{ user?.name }}</span>
+                                    <svg class="w-4 h-4 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                            </template>
+                            <template #content>
+                                <div class="px-4 py-3 border-b border-stone-100 dark:border-slate-700">
+                                    <p class="text-sm font-bold text-stone-800 dark:text-white truncate">{{ user?.name }}</p>
+                                    <p class="text-[11px] text-stone-400 dark:text-slate-500 truncate" dir="ltr">{{ user?.email }}</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    @click="toggleTheme"
+                                    class="w-full flex items-center gap-2 px-4 py-2 text-sm text-stone-700 dark:text-slate-200 hover:bg-stone-50 dark:hover:bg-slate-700 transition-colors"
+                                >
+                                    <svg v-if="isDarkMode" class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                    <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                                    {{ isDarkMode ? 'الوضع المضيء' : 'الوضع الداكن' }}
+                                </button>
+                                <DropdownLink :href="route('profile.edit')" class="dark:text-slate-200 dark:hover:bg-slate-700">
+                                    الإعدادات
+                                </DropdownLink>
+                                <DropdownLink :href="route('profile.edit')" class="dark:text-slate-200 dark:hover:bg-slate-700">
+                                    الملف الشخصي
+                                </DropdownLink>
+                                <div class="border-t border-stone-100 dark:border-slate-700">
+                                    <DropdownLink
+                                        :href="route('logout')"
+                                        method="post"
+                                        as="button"
+                                        class="text-red-600 dark:text-rose-400 dark:hover:bg-rose-950/40"
+                                    >
+                                        تسجيل الخروج
+                                    </DropdownLink>
+                                </div>
+                            </template>
+                        </Dropdown>
                     </div>
                 </div>
             </header>
@@ -194,7 +246,6 @@ const navigation = [
                 </div>
             </div>
 
-            <!-- Expiring Soon Warning Banner (Only shown when <= 7 days left) -->
             <div v-else-if="activeTenant?.days_left !== undefined && activeTenant?.days_left <= 7" class="bg-gradient-to-r from-rose-700 via-red-600 to-rose-700 text-white px-4 py-2.5 text-xs sm:text-sm font-bold flex items-center shadow-md">
                 <div class="flex items-center gap-2 max-w-7xl mx-auto w-full justify-between">
                     <span class="flex items-center gap-2">
@@ -206,7 +257,6 @@ const navigation = [
                 </div>
             </div>
 
-            <!-- Flash Messages -->
             <div v-if="$page.props.flash?.success" class="px-4 sm:px-6 lg:px-8 mt-6">
                 <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-5 py-3.5 rounded-xl text-sm font-bold flex items-center gap-3 shadow-sm shadow-emerald-100/50">
                     <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
@@ -216,7 +266,6 @@ const navigation = [
                 </div>
             </div>
 
-            <!-- Content -->
             <main class="flex-1 p-4 sm:px-6 lg:px-8 py-8">
                 <slot />
             </main>

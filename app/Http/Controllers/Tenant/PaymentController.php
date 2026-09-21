@@ -18,6 +18,12 @@ class PaymentController extends Controller
     {
         $tenantId = auth()->user()->currentTenant()->id;
 
+        $sortable = ['payment_number', 'amount', 'payment_date', 'payment_method', 'created_at'];
+        $sort = in_array($request->input('sort'), $sortable, true)
+            ? $request->input('sort')
+            : 'created_at';
+        $direction = $request->input('direction') === 'asc' ? 'asc' : 'desc';
+
         $query = Payment::where('tenant_id', $tenantId)
             ->with(['client:id,name', 'invoice:id,invoice_number,total_amount,paid_amount']);
 
@@ -39,14 +45,14 @@ class PaymentController extends Controller
             });
         }
 
-        $payments = $query->latest()->paginate(15)->withQueryString();
+        $payments = $query->orderBy($sort, $direction)->paginate(15)->withQueryString();
 
         $stats = [
             'total_collected' => Payment::where('tenant_id', $tenantId)->sum('amount'),
             'payments_count' => Payment::where('tenant_id', $tenantId)->count(),
         ];
 
-        $clients = Client::where('tenant_id', $tenantId)->select('id', 'name')->get();
+        $clients = Client::where('tenant_id', $tenantId)->select('id', 'name')->orderBy('name')->get();
         $invoices = Invoice::where('tenant_id', $tenantId)
             ->whereIn('status', ['posted', 'partially_paid'])
             ->select('id', 'invoice_number', 'total_amount', 'paid_amount', 'client_id')
@@ -61,7 +67,7 @@ class PaymentController extends Controller
             'clients' => $clients,
             'invoices' => $invoices,
             'defaultPaymentNumber' => $defaultPaymentNumber,
-            'filters' => $request->only(['payment_method', 'client_id', 'search']),
+            'filters' => $request->only(['payment_method', 'client_id', 'search', 'sort', 'direction']),
         ]);
     }
 
