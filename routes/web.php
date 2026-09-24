@@ -142,6 +142,7 @@ Route::middleware(AdminAuthenticated::class)->prefix('admin')->group(function ()
     Route::post('/tenants/{id}/activate', [AdminTenantController::class, 'activateSubscription'])->name('admin.tenants.activate');
     Route::post('/tenants/{id}/toggle-status', [AdminTenantController::class, 'toggleStatus'])->name('admin.tenants.toggle_status');
     Route::post('/tenants/{id}/plan', [AdminTenantController::class, 'updatePlan'])->name('admin.tenants.update_plan');
+    Route::post('/tenants/bulk-auto-renew', [AdminTenantController::class, 'bulkAutoRenew'])->name('admin.tenants.bulk_auto_renew');
 
     Route::get('/admins', [AdminAdminController::class, 'index'])->name('admin.admins.index');
     Route::get('/admins/create', [AdminAdminController::class, 'create'])->name('admin.admins.create');

@@ -254,4 +254,73 @@ class AdminTenantController extends Controller
 
         return back()->with('success', $statusMsg);
     }
+
+    /**
+     * Bulk auto-renew: find all tenants whose latest subscription has expired,
+     * create a new subscription with the same plan & billing period, generate an invoice,
+     * and re-activate the tenant.
+     */
+    public function bulkAutoRenew(Request $request)
+    {
+        $this->confirmAdminPassword($request);
+
+        // Get all tenants that have at least one subscription
+        $tenants = Tenant::with(['subscriptions' => fn ($q) => $q->with('plan')->latest('starts_at')])
+            ->get();
+
+        $renewed = 0;
+        $skipped = 0;
+        $errors = [];
+
+        foreach ($tenants as $tenant) {
+            $latestSub = $tenant->subscriptions->first();
+
+            // Skip if no subscription at all
+            if (! $latestSub) {
+                $skipped++;
+                continue;
+            }
+
+            // Skip if subscription is still active/valid
+            if (in_array($latestSub->status, ['active', 'trialing', 'past_due'])
+                && $latestSub->ends_at
+                && $latestSub->ends_at->isFuture()) {
+                $skipped++;
+                continue;
+            }
+
+            // Skip if already expired but no plan to renew with
+            if (! $latestSub->plan) {
+                $skipped++;
+                continue;
+            }
+
+            // Skip free/trial plans — they shouldn't auto-renew
+            if ($latestSub->plan->isFree()) {
+                $skipped++;
+                continue;
+            }
+
+            try {
+                $this->subscriptions->assignPlan(
+                    $tenant,
+                    $latestSub->plan,
+                    $latestSub->billing_period ?? 'yearly'
+                );
+                $renewed++;
+            } catch (\Throwable $e) {
+                $errors[] = "{$tenant->name}: {$e->getMessage()}";
+            }
+        }
+
+        $msg = "تم تجديد {$renewed} اشتراك بنجاح.";
+        if ($skipped > 0) {
+            $msg .= " تم تخطي {$skipped} مكتب (نشط أو مجاني أو بدون اشتراك).";
+        }
+        if (count($errors) > 0) {
+            $msg .= ' أخطاء: ' . implode(' | ', array_slice($errors, 0, 5));
+        }
+
+        return back()->with('success', $msg);
+    }
 }

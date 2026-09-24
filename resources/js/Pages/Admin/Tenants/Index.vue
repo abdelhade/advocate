@@ -53,6 +53,7 @@ const extendDays = ref(30);
 const planModalTenant = ref(null);
 const selectedPlanId = ref(null);
 const billingPeriod = ref('yearly');
+const showAutoRenewConfirm = ref(false);
 
 const showPasswordModal = ref(false);
 const passwordProcessing = ref(false);
@@ -144,6 +145,15 @@ const updatePlan = () => {
     });
 };
 
+const triggerBulkAutoRenew = () => {
+    showAutoRenewConfirm.value = false;
+    requestPassword({
+        method: 'post',
+        url: adminPaths.tenantsBulkAutoRenew,
+        data: {},
+    });
+};
+
 const planBadgeClass = (slug) => {
     if (slug === 'enterprise') return 'bg-stone-900 text-white border-stone-800';
     if (slug === 'professional') return 'bg-red-50 text-red-700 border-red-200';
@@ -170,10 +180,19 @@ const statusLabel = (tenant) => {
             <div>
                 <p class="text-sm text-stone-400">إدارة تفاصيل المكاتب المسجلة، تواريخ الاشتراكات، والتمديد والإلغاء</p>
             </div>
-            <Link :href="adminPaths.tenantsCreate" class="inline-flex items-center gap-2 px-5 py-3 bg-red-700 hover:bg-red-800 text-white text-sm font-bold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-red-200 flex-shrink-0">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                إضافة مكتب جديد
-            </Link>
+            <div class="flex items-center gap-3 flex-shrink-0">
+                <button
+                    @click="showAutoRenewConfirm = true"
+                    class="inline-flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-emerald-200 cursor-pointer"
+                >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    فوترة تلقائية
+                </button>
+                <Link :href="adminPaths.tenantsCreate" class="inline-flex items-center gap-2 px-5 py-3 bg-red-700 hover:bg-red-800 text-white text-sm font-bold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-red-200">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    إضافة مكتب جديد
+                </Link>
+            </div>
         </div>
 
         <!-- Search & Filters -->
@@ -524,6 +543,52 @@ const statusLabel = (tenant) => {
                                 class="flex-1 px-4 py-3 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-sm font-bold transition-colors shadow-md shadow-rose-200"
                             >
                                 نعم، احذف المشترك
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
+
+        <!-- Bulk Auto-Renew Confirmation Modal -->
+        <Teleport to="body">
+            <Transition
+                enter-active-class="transition-all duration-200"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition-all duration-200"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+            >
+                <div v-if="showAutoRenewConfirm" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" @click.self="showAutoRenewConfirm = false">
+                    <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl text-right dir-rtl">
+                        <div class="w-14 h-14 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                        </div>
+                        <h3 class="text-lg font-bold text-stone-900 text-center mb-2">فوترة تلقائية — تجديد الاشتراكات المنتهية</h3>
+                        <div class="text-xs text-stone-500 text-center mb-6 space-y-2">
+                            <p>سيتم تجديد اشتراكات <strong class="text-stone-800">جميع المكاتب المنتهية</strong> تلقائياً بنفس الخطة وفترة الفوترة السابقة، مع إصدار فاتورة جديدة لكل مكتب.</p>
+                            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-right">
+                                <p class="text-amber-800 font-bold">⚠️ ملاحظات:</p>
+                                <ul class="text-amber-700 mt-1 space-y-1 list-disc list-inside text-[11px]">
+                                    <li>الخطط المجانية والتجريبية لن يتم تجديدها</li>
+                                    <li>المكاتب النشطة التي لم تنتهِ سيتم تخطيها</li>
+                                    <li>سيتم تفعيل المكاتب المجددة وإصدار فواتير لها</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button
+                                @click="showAutoRenewConfirm = false"
+                                class="flex-1 px-4 py-3 border border-stone-200 rounded-xl text-sm font-semibold text-stone-600 hover:bg-stone-50 transition-colors cursor-pointer"
+                            >
+                                إلغاء
+                            </button>
+                            <button
+                                @click="triggerBulkAutoRenew()"
+                                class="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-bold transition-colors shadow-md shadow-emerald-200 cursor-pointer"
+                            >
+                                ⚡ تجديد الآن
                             </button>
                         </div>
                     </div>
