@@ -14,7 +14,7 @@ export const adminPaths = {
     tenantExtend: (id) => `/admin/tenants/${id}/extend`,
     tenantToggleStatus: (id) => `/admin/tenants/${id}/toggle-status`,
     tenantPlan: (id) => `/admin/tenants/${id}/plan`,
-    tenantsBulkAutoRenew: '/admin/tenants/bulk-auto-renew',
+    tenantsBulkBilling: '/admin/tenants/bulk-billing',
     admins: '/admin/admins',
     adminsCreate: '/admin/admins/create',
     adminEdit: (id) => `/admin/admins/${id}/edit`,

@@ -22,8 +22,7 @@ class AdminTenantController extends Controller
     {
         $query = Tenant::query()
             ->with(['users', 'subscriptions' => fn ($q) => $q->with('plan')->latest('starts_at')])
-            ->withCount('users')
-            ->latest();
+            ->withCount('users');
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -40,11 +39,24 @@ class AdminTenantController extends Controller
             });
         }
 
+        // Sorting
+        $sortable = ['name', 'email', 'status', 'created_at', 'users_count'];
+        $sortBy = in_array($request->input('sort_by'), $sortable) ? $request->input('sort_by') : 'created_at';
+        $sortDir = $request->input('sort_dir') === 'asc' ? 'asc' : 'desc';
+
+        if ($sortBy === 'users_count') {
+            $query->orderBy('users_count', $sortDir);
+        } else {
+            $query->orderBy($sortBy, $sortDir);
+        }
+
         $plans = SubscriptionPlan::where('is_active', true)->orderBy('sort_order')->get([
             'id', 'name', 'slug', 'tagline', 'price_monthly', 'price_yearly',
         ]);
 
-        $tenants = $query->paginate(20)->through(function ($tenant) {
+        $filterParams = $request->only('search', 'plan', 'sort_by', 'sort_dir');
+
+        $tenants = $query->paginate(20)->appends($filterParams)->through(function ($tenant) {
             $owner = $tenant->users->firstWhere('pivot.is_owner', true);
             $subscription = $tenant->subscriptions->first();
             $summary = $this->subscriptions->summarize($subscription, $tenant);
@@ -75,7 +87,7 @@ class AdminTenantController extends Controller
         return Inertia::render('Admin/Tenants/Index', [
             'tenants' => $tenants,
             'plans' => $plans,
-            'filters' => $request->only('search', 'plan'),
+            'filters' => $filterParams,
         ]);
     }
 
@@ -256,66 +268,79 @@ class AdminTenantController extends Controller
     }
 
     /**
-     * Bulk auto-renew: find all tenants whose latest subscription has expired,
-     * create a new subscription with the same plan & billing period, generate an invoice,
-     * and re-activate the tenant.
+     * Bulk billing: find all tenants whose subscription has expired or is about
+     * to expire (within 7 days), and issue a pending invoice for the next billing
+     * cycle. The invoice appears on the tenant's billing page as "pending".
      */
-    public function bulkAutoRenew(Request $request)
+    public function bulkBilling(Request $request)
     {
         $this->confirmAdminPassword($request);
 
-        // Get all tenants that have at least one subscription
         $tenants = Tenant::with(['subscriptions' => fn ($q) => $q->with('plan')->latest('starts_at')])
             ->get();
 
-        $renewed = 0;
+        $invoiced = 0;
         $skipped = 0;
         $errors = [];
 
         foreach ($tenants as $tenant) {
             $latestSub = $tenant->subscriptions->first();
 
-            // Skip if no subscription at all
-            if (! $latestSub) {
+            // Skip if no subscription
+            if (! $latestSub || ! $latestSub->plan) {
                 $skipped++;
                 continue;
             }
 
-            // Skip if subscription is still active/valid
-            if (in_array($latestSub->status, ['active', 'trialing', 'past_due'])
-                && $latestSub->ends_at
-                && $latestSub->ends_at->isFuture()) {
-                $skipped++;
-                continue;
-            }
-
-            // Skip if already expired but no plan to renew with
-            if (! $latestSub->plan) {
-                $skipped++;
-                continue;
-            }
-
-            // Skip free/trial plans — they shouldn't auto-renew
+            // Skip free/trial plans
             if ($latestSub->plan->isFree()) {
                 $skipped++;
                 continue;
             }
 
+            $plan = $latestSub->plan;
+            $billingPeriod = $latestSub->billing_period ?? 'yearly';
+
+            // Check if subscription expired or will expire within 7 days
+            $isExpiredOrExpiring = ! $latestSub->ends_at
+                || $latestSub->ends_at->isPast()
+                || $latestSub->ends_at->diffInDays(now()) <= 7;
+
+            if (! $isExpiredOrExpiring) {
+                $skipped++;
+                continue;
+            }
+
+            // Skip if already has a pending invoice for this plan & period
+            $hasPending = $tenant->subscriptionInvoices()
+                ->where('plan_id', $plan->id)
+                ->where('billing_period', $billingPeriod)
+                ->where('status', 'pending')
+                ->exists();
+
+            if ($hasPending) {
+                $skipped++;
+                continue;
+            }
+
             try {
-                $this->subscriptions->assignPlan(
+                $this->subscriptions->createInvoiceForSubscription(
                     $tenant,
-                    $latestSub->plan,
-                    $latestSub->billing_period ?? 'yearly'
+                    $latestSub,
+                    $plan,
+                    $billingPeriod,
+                    'pending',      // status = pending (not paid)
+                    null
                 );
-                $renewed++;
+                $invoiced++;
             } catch (\Throwable $e) {
                 $errors[] = "{$tenant->name}: {$e->getMessage()}";
             }
         }
 
-        $msg = "تم تجديد {$renewed} اشتراك بنجاح.";
+        $msg = "تم إصدار {$invoiced} فاتورة معلقة بنجاح.";
         if ($skipped > 0) {
-            $msg .= " تم تخطي {$skipped} مكتب (نشط أو مجاني أو بدون اشتراك).";
+            $msg .= " تم تخطي {$skipped} مكتب (نشط أو مجاني أو لديه فاتورة معلقة بالفعل).";
         }
         if (count($errors) > 0) {
             $msg .= ' أخطاء: ' . implode(' | ', array_slice($errors, 0, 5));
@@ -324,3 +349,4 @@ class AdminTenantController extends Controller
         return back()->with('success', $msg);
     }
 }
+
