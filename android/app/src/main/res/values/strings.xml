@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">جلسات</string>
+    <string name="website_url">https://jalsateg.com</string>
+    <string name="offline_title">لا يوجد اتصال بالإنترنت</string>
+    <string name="offline_message">يرجى التأكد من اتصال هاتفك بالإنترنت ثم إعادة المحاولة.</string>
+    <string name="retry">إعادة المحاولة</string>
+    <string name="file_chooser_title">اختر ملف أو التقط صورة</string>
+</resources>
+

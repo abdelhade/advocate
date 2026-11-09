@@ -30,48 +30,40 @@ const formatCurrency = (val) => {
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-stone-100 dark:border-slate-800">
                 <div>
                     <div class="flex items-center gap-3 mb-2">
-                        <span class="px-3 py-1 bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 text-xs font-black rounded-full border border-blue-200 dark:border-blue-800">
-                            {{ tenant.subscription?.plan_name || 'الخطة الفعالة' }}
+                        <span class="px-3 py-1 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 text-xs font-black rounded-full border border-emerald-200 dark:border-emerald-800">
+                            {{ tenant.subscription?.plan_name || 'مجاني بالكامل (مدى الحياة)' }}
                         </span>
-                        <span
-                            :class="[
-                                'px-3 py-1 text-xs font-black rounded-full border',
-                                tenant.status === 'active'
-                                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800'
-                                    : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800',
-                            ]"
-                        >
-                            {{ tenant.status === 'active' ? '🟢 اشتراك نشط' : '⏳ قيد التجديد' }}
+                        <span class="px-3 py-1 text-xs font-black rounded-full border bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800">
+                            🟢 مجاني 100% مدى الحياة
                         </span>
                     </div>
                     <h2 class="text-2xl font-black text-stone-900 dark:text-white">خطة اشتراك مكتب {{ tenant.name }}</h2>
-                    <p class="text-xs text-stone-400 dark:text-slate-500 mt-1 font-semibold">تاريخ الانتهاء المحدد: {{ tenant.subscription?.ends_at || '-' }}</p>
+                    <p class="text-xs text-stone-400 dark:text-slate-500 mt-1 font-semibold">المنصة مجانية بالكامل لجميع المحامين بدون أي رسوم أو حدود زمنية.</p>
                 </div>
 
-                <div class="bg-stone-50 dark:bg-slate-800 p-4 rounded-2xl border border-stone-200/70 dark:border-slate-700 text-right min-w-[220px]">
-                    <p class="text-xs font-bold text-stone-400 dark:text-slate-500">الأيام المتبقية في الاشتراك</p>
+                <div class="bg-emerald-50/60 dark:bg-emerald-950/30 p-4 rounded-2xl border border-emerald-200/70 dark:border-emerald-800/50 text-right min-w-[220px]">
+                    <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400">حالة الاشتراك</p>
                     <div class="flex items-baseline gap-2 mt-1">
-                        <span class="text-3xl font-black text-blue-700 dark:text-blue-400">{{ tenant.days_left }}</span>
-                        <span class="text-xs font-bold text-stone-600 dark:text-slate-300">يوم متبقي</span>
+                        <span class="text-2xl font-black text-emerald-700 dark:text-emerald-300">مفعل مدى الحياة</span>
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-6">
                 <div>
-                    <p class="text-xs font-bold text-stone-400 dark:text-slate-500">دورة الفوترة الحالية</p>
+                    <p class="text-xs font-bold text-stone-400 dark:text-slate-500">نوع الخطة</p>
                     <p class="text-sm font-black text-stone-800 dark:text-slate-100 mt-1">
-                        {{ tenant.subscription?.billing_period === 'monthly' ? 'فوترة شهرية' : 'فوترة سنوية' }}
+                        مجاني شامل كافة المميزات
                     </p>
                 </div>
                 <div>
-                    <p class="text-xs font-bold text-stone-400 dark:text-slate-500">تاريخ بدء الفترة الحالية</p>
+                    <p class="text-xs font-bold text-stone-400 dark:text-slate-500">تاريخ بدء الاستخدام</p>
                     <p class="text-sm font-black text-stone-800 dark:text-slate-100 font-mono mt-1">
                         {{ tenant.subscription?.starts_at || '-' }}
                     </p>
                 </div>
                 <div>
-                    <p class="text-xs font-bold text-stone-400 dark:text-slate-500">البريد الإلكتروني المعتمد للفواتير</p>
+                    <p class="text-xs font-bold text-stone-400 dark:text-slate-500">البريد الإلكتروني المعتمد للمكتب</p>
                     <p class="text-sm font-black text-stone-800 dark:text-slate-100 font-mono mt-1" dir="ltr">
                         {{ tenant.email }}
                     </p>

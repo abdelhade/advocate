@@ -57,7 +57,6 @@ const allNavigation = [
     { name: 'سندات القبض', href: route('payments.index'), icon: 'M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z', active: route().current('payments.*'), feature: 'billing' },
     { name: 'المصروفات', href: route('expenses.index'), icon: 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z', active: route().current('expenses.*'), feature: 'billing' },
     { name: 'فريق العمل والمستخدمين', href: route('tenant.users.index'), icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z', active: route().current('tenant.users.*') },
-    { name: 'الاشتراك والفوترة', href: route('tenant.billing.index'), icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z', active: route().current('tenant.billing.*') },
     { name: 'سجل النشاطات', href: route('audit-logs.index'), icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', active: route().current('audit-logs.*') },
 ];
 
@@ -239,29 +238,6 @@ const navigation = computed(() =>
                     </div>
                 </div>
             </header>
-
-            <!-- Trial Banner -->
-            <div v-if="activeTenant?.is_trial" class="bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 px-4 py-2.5 text-xs sm:text-sm font-bold flex items-center shadow-sm border-b border-amber-600/20">
-                <div class="flex items-center gap-2 max-w-7xl mx-auto w-full justify-between">
-                    <span class="flex items-center gap-2">
-                        <span class="p-1 bg-slate-950/10 rounded-lg">🎁</span>
-                        <span>فترة تجريبية مجانية لمكتبك</span>
-                        <span class="bg-slate-950 text-amber-400 px-2.5 py-0.5 rounded-full text-xs font-black">متبقي {{ activeTenant?.days_left ?? 15 }} يوماً</span>
-                    </span>
-                    <span class="text-xs font-bold text-slate-900 opacity-90 hidden sm:inline">جميع الميزات مفعلة بالكامل لمكتبك الجديد</span>
-                </div>
-            </div>
-
-            <div v-else-if="activeTenant?.days_left !== undefined && activeTenant?.days_left <= 7" class="bg-gradient-to-r from-rose-700 via-red-600 to-rose-700 text-white px-4 py-2.5 text-xs sm:text-sm font-bold flex items-center shadow-md">
-                <div class="flex items-center gap-2 max-w-7xl mx-auto w-full justify-between">
-                    <span class="flex items-center gap-2">
-                        <span class="p-1 bg-white/20 rounded-lg">⚠️</span>
-                        <span>تنبيه: اشتراك المكتب على وشك الانتهاء</span>
-                        <span class="bg-white text-rose-800 px-2.5 py-0.5 rounded-full text-xs font-black">متبقي {{ activeTenant.days_left }} أيام</span>
-                    </span>
-                    <span class="text-xs font-bold opacity-90 hidden sm:inline">يرجى التواصل مع الإدارة لتجديد الاشتراك قبل الانتهاء (تاريخ الانتهاء: {{ activeTenant.expires_at }})</span>
-                </div>
-            </div>
 
             <div v-if="$page.props.flash?.success" class="px-4 sm:px-6 lg:px-8 mt-6">
                 <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-5 py-3.5 rounded-xl text-sm font-bold flex items-center gap-3 shadow-sm shadow-emerald-100/50">

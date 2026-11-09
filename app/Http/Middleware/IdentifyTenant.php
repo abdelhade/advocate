@@ -82,20 +82,6 @@ class IdentifyTenant
 
     protected function shareTenantWithInertia($user, Tenant $tenant): void
     {
-        $settings = $tenant->settings ?? [];
-        if (! empty($settings['expires_at'])) {
-            $expiresAt = \Carbon\Carbon::parse($settings['expires_at']);
-            $isTrial = false;
-        } elseif ($tenant->status === 'active') {
-            $expiresAt = $tenant->created_at ? $tenant->created_at->addYear() : null;
-            $isTrial = false;
-        } else {
-            $expiresAt = $tenant->created_at ? $tenant->created_at->addDays(15) : null;
-            $isTrial = true;
-        }
-
-        $daysLeft = $expiresAt ? max(0, (int) ceil(now()->diffInSeconds($expiresAt, false) / 86400)) : 0;
-
         $planPayload = app(\App\Services\PlanLimitService::class)->inertiaPayload($tenant);
 
         Inertia::share([
@@ -104,10 +90,10 @@ class IdentifyTenant
                 'name' => $tenant->name,
                 'slug' => $tenant->slug,
                 'status' => $tenant->status,
-                'is_trial' => $isTrial || $planPayload['is_trialing'],
-                'days_left' => $daysLeft,
+                'is_trial' => false,
+                'days_left' => null,
                 'start_date' => $tenant->created_at ? $tenant->created_at->format('Y-m-d') : null,
-                'expires_at' => $expiresAt ? $expiresAt->format('Y-m-d') : null,
+                'expires_at' => null,
                 'plan' => $planPayload,
             ],
             'auth.user_tenants' => function () use ($user) {

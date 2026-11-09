@@ -1,0 +1,26 @@
+R_DEF: Internal format may change without notice
+local
+color accent
+color background
+color primary
+color primary_dark
+color splash_bg
+color text_primary
+color text_secondary
+drawable splash_background
+id btnRetry
+id layoutError
+id progressBar
+id webView
+layout activity_main
+mipmap ic_launcher
+mipmap ic_launcher_round
+string app_name
+string file_chooser_title
+string offline_message
+string offline_title
+string retry
+string website_url
+style Theme.Jalsat
+style Theme.Jalsat.Splash
+xml file_paths

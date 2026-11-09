@@ -6,7 +6,6 @@ use App\Models\Client;
 use App\Models\LegalCase;
 use App\Models\SubscriptionPlan;
 use App\Models\Tenant;
-use Illuminate\Validation\ValidationException;
 
 class PlanLimitService
 {
@@ -17,92 +16,65 @@ class PlanLimitService
 
     public function isTrialing(Tenant $tenant): bool
     {
-        return $this->subscription($tenant)?->status === 'trialing';
+        return false;
     }
 
     /**
-     * During trial, unlock enterprise limits/features.
+     * The application is completely free with all features and unlimited limits.
      */
     public function effectivePlan(Tenant $tenant): SubscriptionPlan
     {
-        if ($this->isTrialing($tenant)) {
-            $enterprise = SubscriptionPlan::where('slug', 'enterprise')->where('is_active', true)->first();
-            if ($enterprise) {
-                return $enterprise;
-            }
-        }
-
-        $plan = $this->subscription($tenant)?->plan;
+        $plan = $this->subscription($tenant)?->plan
+            ?? SubscriptionPlan::where('slug', 'free')->first()
+            ?? SubscriptionPlan::first();
 
         if ($plan) {
             return $plan;
         }
 
-        return SubscriptionPlan::where('slug', 'free')->where('is_active', true)->firstOrFail();
+        $dummyPlan = new SubscriptionPlan([
+            'name' => 'المجانية الشاملة',
+            'slug' => 'free',
+            'tagline' => 'مجاني بالكامل لكافة مكاتب المحاماة',
+            'max_users' => 999999,
+            'max_clients' => 999999,
+            'max_cases' => 999999,
+            'max_storage_mb' => 999999,
+            'feature_tasks' => true,
+            'feature_billing' => true,
+            'feature_documents' => true,
+            'feature_portal' => true,
+            'price_monthly' => 0,
+            'price_yearly' => 0,
+            'is_active' => true,
+        ]);
+
+        return $dummyPlan;
     }
 
     public function hasFeature(Tenant $tenant, string $feature): bool
     {
-        $plan = $this->effectivePlan($tenant);
-        $column = 'feature_'.$feature;
-
-        return (bool) ($plan->{$column} ?? false);
+        return true;
     }
 
     public function assertFeature(Tenant $tenant, string $feature): void
     {
-        if ($this->hasFeature($tenant, $feature)) {
-            return;
-        }
-
-        $labels = [
-            'tasks' => 'إدارة المهام',
-            'billing' => 'الفوترة والأتعاب والمصروفات',
-            'documents' => 'إدارة المستندات والتوثيق',
-            'portal' => 'بوابة الموكلين',
-        ];
-
-        $label = $labels[$feature] ?? $feature;
-
-        throw ValidationException::withMessages([
-            'plan' => "ميزة «{$label}» غير متاحة في خطتك الحالية. يرجى الترقية للوصول إليها.",
-        ]);
+        // Fully free application - all features unlocked
     }
 
     public function assertCanAddUser(Tenant $tenant): void
     {
-        $plan = $this->effectivePlan($tenant);
-        $current = $tenant->users()->count();
-
-        if ($current >= (int) $plan->max_users) {
-            throw ValidationException::withMessages([
-                'plan' => "وصلت للحد الأقصى للمستخدمين ({$plan->max_users}) في خطتك. يرجى الترقية لإضافة المزيد.",
-            ]);
-        }
+        // Fully free application - unlimited users
     }
 
     public function assertCanAddClient(Tenant $tenant): void
     {
-        $plan = $this->effectivePlan($tenant);
-        $current = Client::where('tenant_id', $tenant->id)->count();
-
-        if ($current >= (int) $plan->max_clients) {
-            throw ValidationException::withMessages([
-                'plan' => "وصلت للحد الأقصى للموكلين ({$plan->max_clients}) في خطتك. يرجى الترقية لإضافة المزيد.",
-            ]);
-        }
+        // Fully free application - unlimited clients
     }
 
     public function assertCanAddCase(Tenant $tenant): void
     {
-        $plan = $this->effectivePlan($tenant);
-        $current = LegalCase::where('tenant_id', $tenant->id)->count();
-
-        if ($current >= (int) $plan->max_cases) {
-            throw ValidationException::withMessages([
-                'plan' => "وصلت للحد الأقصى للقضايا ({$plan->max_cases}) في خطتك. يرجى الترقية لإضافة المزيد.",
-            ]);
-        }
+        // Fully free application - unlimited cases
     }
 
     public function usage(Tenant $tenant): array
@@ -116,30 +88,28 @@ class PlanLimitService
 
     public function inertiaPayload(Tenant $tenant): array
     {
-        $plan = $this->effectivePlan($tenant);
-        $assigned = $this->subscription($tenant)?->plan;
         $usage = $this->usage($tenant);
 
         return [
-            'slug' => $assigned?->slug ?? $plan->slug,
-            'name' => $assigned?->name ?? $plan->name,
-            'is_trialing' => $this->isTrialing($tenant),
+            'slug' => 'free',
+            'name' => 'مجاني بالكامل (مدى الحياة)',
+            'is_trialing' => false,
             'limits' => [
-                'max_users' => (int) $plan->max_users,
-                'max_clients' => (int) $plan->max_clients,
-                'max_cases' => (int) $plan->max_cases,
+                'max_users' => 999999,
+                'max_clients' => 999999,
+                'max_cases' => 999999,
             ],
             'usage' => $usage,
             'features' => [
-                'tasks' => (bool) $plan->feature_tasks,
-                'billing' => (bool) $plan->feature_billing,
-                'documents' => (bool) $plan->feature_documents,
-                'portal' => (bool) $plan->feature_portal,
+                'tasks' => true,
+                'billing' => true,
+                'documents' => true,
+                'portal' => true,
             ],
             'can_add' => [
-                'user' => $usage['users'] < (int) $plan->max_users,
-                'client' => $usage['clients'] < (int) $plan->max_clients,
-                'case' => $usage['cases'] < (int) $plan->max_cases,
+                'user' => true,
+                'client' => true,
+                'case' => true,
             ],
         ];
     }

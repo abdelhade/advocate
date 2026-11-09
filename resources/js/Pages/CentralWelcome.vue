@@ -205,7 +205,10 @@ const displayStats = computed(() => {
                             <a href="#sessions-table" class="text-blue-200 hover:text-white transition-colors duration-200">جدول الجلسات</a>
                             <a href="#features" class="text-blue-200 hover:text-white transition-colors duration-200">المميزات</a>
                             <a href="#stats" class="text-blue-200 hover:text-white transition-colors duration-200">الإحصائيات</a>
-                            <a href="#pricing" class="text-blue-200 hover:text-white transition-colors duration-200">الأسعار</a>
+                            <a href="#pricing" class="text-emerald-400 hover:text-emerald-300 font-bold transition-colors duration-200">مجاني بالكامل 🎁</a>
+                            <a href="#app-download" class="text-sky-300 hover:text-white font-bold transition-colors duration-200 flex items-center gap-1.5 bg-blue-900/40 px-3 py-1.5 rounded-xl border border-blue-700/50 text-xs">
+                                <span>📱</span><span>تطبيق الهاتف</span>
+                            </a>
                         </div>
 
                         <div class="flex items-center gap-3">
@@ -260,9 +263,9 @@ const displayStats = computed(() => {
                         نظام متكامل لمتابعة جدول الجلسات اليومي، أوراق القضية، الأتعاب المالية، وتنظيم سير العمل بمكتب المحاماة بكل سهولة.
                     </p>
 
-                    <!-- CTA Single Button -->
+                    <!-- CTA Buttons -->
                     <div
-                        class="mt-8 flex justify-center transition-all duration-700 delay-300"
+                        class="mt-8 flex flex-wrap items-center justify-center gap-4 transition-all duration-700 delay-300"
                         :class="{ 'opacity-100 translate-y-0': isVisible, 'opacity-0 translate-y-6': !isVisible }"
                     >
                         <template v-if="user">
@@ -273,10 +276,22 @@ const displayStats = computed(() => {
                         </template>
                         <template v-else>
                             <Link href="/register" class="px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-bold rounded-2xl shadow-xl shadow-blue-950/60 transition-all duration-200 hover:-translate-y-0.5 text-base flex items-center justify-center gap-2">
-                                ابدأ فترتك التجريبية مجاناً
+                                سجل مكتبك مجاناً الآن
                                 <svg class="w-5 h-5 rtl:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                             </Link>
                         </template>
+
+                        <!-- Download AAB App Button -->
+                        <a
+                            href="/downloads/jalsat-release.aab"
+                            download="jalsat-release.aab"
+                            class="px-7 py-4 bg-emerald-500/15 hover:bg-emerald-500/25 border-2 border-emerald-500/50 hover:border-emerald-400 text-emerald-300 hover:text-white font-black rounded-2xl shadow-xl shadow-emerald-950/40 transition-all duration-200 hover:-translate-y-0.5 text-base flex items-center justify-center gap-2.5"
+                        >
+                            <svg class="w-5 h-5 text-emerald-400" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0001 0-.5516.4482-1.0002.9993-1.0002.5516 0 .9997.4486.9997 1.0002 0 .5515-.4481 1.0001-.9997 1.0001m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0001 0-.5516.4482-1.0002.9993-1.0002.5516 0 .9997.4486.9997 1.0002 0 .5515-.4481 1.0001-.9997 1.0001m11.4045-6.02l1.9965-3.456a.416.416 0 00-.1522-.5676.416.416 0 00-.5676.1522l-2.0223 3.503C15.5898 8.4116 13.844 8.082 12 8.082c-1.8445 0-3.5903.3296-5.1362.871L4.8415 5.45a.416.416 0 00-.5676-.1522.416.416 0 00-.1522.5676l1.9965 3.456C2.6874 11.0428.3435 14.8587.0544 19.3333h23.8912c-.2891-4.4746-2.633-8.2905-6.0645-10.0119"/>
+                            </svg>
+                            <span>تحميل تطبيق الأندرويد (AAB)</span>
+                        </a>
                     </div>
 
                     <!-- REAL COURTS & SESSIONS SCHEDULE TABLE (جدول الجلسات الحقيقي) -->
@@ -451,103 +466,155 @@ const displayStats = computed(() => {
                 </div>
             </section>
 
-            <!-- Pricing Section -->
+            <!-- Pricing Section (100% Free Forever) -->
             <section id="pricing" class="relative py-24 border-t border-slate-800/80 bg-[#070b14]/50 z-10">
                 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                    <div class="max-w-3xl mx-auto mb-16">
-                        <span class="px-3.5 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 text-xs font-bold mb-4 inline-block">خطط الاشتراك</span>
-                        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight mb-8">خطط مرنة تناسب حجم مكتبك</h2>
-
-                        <!-- Billing Toggle -->
-                        <div class="inline-flex items-center gap-2 p-1.5 bg-[#0a0f1c] rounded-2xl border border-slate-800">
-                            <button
-                                @click="isAnnualPricing = false"
-                                class="px-5 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer"
-                                :class="!isAnnualPricing ? 'bg-slate-800 text-white shadow' : 'text-slate-400 hover:text-white'"
-                            >
-                                دفع شهري
-                            </button>
-                            <button
-                                @click="isAnnualPricing = true"
-                                class="px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 cursor-pointer"
-                                :class="isAnnualPricing ? 'bg-blue-600 text-white shadow' : 'text-slate-400 hover:text-white'"
-                            >
-                                <span>دفع سنوي</span>
-                                <span class="px-2 py-0.5 text-[10px] font-black rounded-md" :class="isAnnualPricing ? 'bg-white text-blue-900' : 'bg-blue-500/20 text-blue-400'">
-                                    شهرين مجاناً
-                                </span>
-                            </button>
-                        </div>
+                    <div class="max-w-3xl mx-auto mb-12">
+                        <span class="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-black mb-4 inline-flex items-center gap-2">
+                            <span>🎁</span>
+                            <span>المنصة مجانية 100% مدى الحياة</span>
+                        </span>
+                        <h2 class="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">كافة ميزات النظام مجانية بالكامل</h2>
+                        <p class="text-base text-slate-300">
+                            لا حاجة لبطاقة بنكية أو اشتراكات شهرية. منصة جلسات مفتوحة بالكامل لدعم المحامين ومكاتب المحاماة في مصر والوطن العربي.
+                        </p>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto text-right items-stretch">
-                        <!-- Free Plan -->
-                        <div class="p-8 rounded-3xl bg-[#090d17] border border-slate-800 flex flex-col justify-between">
+                    <!-- Single Comprehensive Free Plan Card -->
+                    <div class="max-w-4xl mx-auto rounded-3xl bg-gradient-to-b from-[#0e1628] to-[#090d18] border-2 border-emerald-500/40 p-8 sm:p-12 shadow-2xl shadow-emerald-950/20 text-right relative overflow-hidden">
+                        <div class="absolute top-0 right-0 left-0 h-1.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600"></div>
+
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-8 border-b border-slate-800">
                             <div>
-                                <h3 class="text-xl font-bold text-white mb-2">المجانية</h3>
-                                <p class="text-xs text-slate-400 mb-6">للتجربة والمحامين المستقلين</p>
-                                <div class="mb-6 p-4 rounded-2xl bg-[#04070e] border border-slate-800 text-right">
-                                    <span class="text-4xl font-black text-white">0</span>
-                                    <span class="text-xs text-slate-400 mr-1">ج.م / {{ isAnnualPricing ? 'سنوياً' : 'شهرياً' }}</span>
+                                <div class="inline-block px-3 py-1 bg-emerald-500/20 text-emerald-400 text-xs font-black rounded-lg mb-2">
+                                    الخطة المجانية الشاملة
                                 </div>
-                                <ul class="space-y-3 mb-8 text-xs font-semibold text-slate-300">
-                                    <li class="flex items-center gap-2.5">✓ 1 مستخدم (محامي واحد)</li>
-                                    <li class="flex items-center gap-2.5">✓ 10 موكلين</li>
-                                    <li class="flex items-center gap-2.5">✓ 100 قضية</li>
-                                    <li class="flex items-center gap-2.5 text-slate-500 line-through">إدارة المهام</li>
-                                    <li class="flex items-center gap-2.5 text-slate-500 line-through">الفوترة وبوابة الموكلين</li>
-                                </ul>
+                                <h3 class="text-2xl sm:text-3xl font-black text-white">جلسات للمحاماة (مجاني مدى الحياة)</h3>
+                                <p class="text-sm text-slate-400 mt-1">كافة الأدوات والمميزات متاحة بدون أي قيود على الاستخدام</p>
                             </div>
-                            <Link href="/register" class="w-full text-center px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs transition">
-                                ابدأ مجاناً
-                            </Link>
+
+                            <div class="p-4 sm:p-6 rounded-2xl bg-[#04070e] border border-slate-800 text-center md:text-right min-w-[200px]">
+                                <div class="flex items-baseline justify-center md:justify-start gap-1">
+                                    <span class="text-5xl font-black text-white">0</span>
+                                    <span class="text-sm font-bold text-emerald-400">ج.م</span>
+                                </div>
+                                <span class="text-xs text-slate-400 font-semibold block mt-1">مجاني دائماً وبلا مقابل</span>
+                            </div>
                         </div>
 
-                        <!-- Pro Plan -->
-                        <div class="p-8 rounded-3xl bg-[#0a0f1d] border-2 border-blue-600 flex flex-col justify-between shadow-2xl shadow-blue-950/40 relative">
-                            <div class="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 bg-blue-600 text-white text-[11px] font-black rounded-full shadow">
-                                الخيار الأكثر طلباً 🚀
+                        <!-- Feature Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 py-8 border-b border-slate-800 text-sm font-semibold text-slate-200">
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">✓</span>
+                                <span>عدد غير محدود من القضايا والجلسات</span>
                             </div>
-                            <div>
-                                <h3 class="text-xl font-bold text-white mb-2">الاحترافية</h3>
-                                <p class="text-xs text-slate-400 mb-6">للمكاتب المتوسطة والمتنامية</p>
-                                <div class="mb-6 p-4 rounded-2xl bg-[#04070e] border border-slate-800 text-right">
-                                    <span class="text-4xl font-black text-white">{{ isAnnualPricing ? '1,560' : '156' }}</span>
-                                    <span class="text-xs text-slate-400 mr-1">ج.م / {{ isAnnualPricing ? 'سنوياً' : 'شهرياً' }}</span>
-                                </div>
-                                <ul class="space-y-3 mb-8 text-xs font-semibold text-slate-200">
-                                    <li class="flex items-center gap-2.5 text-blue-400 font-bold">✓ 10 مستخدمين</li>
-                                    <li class="flex items-center gap-2.5">✓ 200 موكل</li>
-                                    <li class="flex items-center gap-2.5">✓ 3,000 قضية</li>
-                                    <li class="flex items-center gap-2.5">✓ إدارة المهام والفوترة والمستندات</li>
-                                    <li class="flex items-center gap-2.5 text-blue-400 font-bold">✓ بوابة الموكلين</li>
-                                </ul>
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">✓</span>
+                                <span>عدد غير محدود من الموكلين وبياناتهم</span>
                             </div>
-                            <Link href="/register" class="w-full text-center px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-blue-950/50">
-                                اشترك الآن
-                            </Link>
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">✓</span>
+                                <span>إضافة فريق العمل والمحامين المعاونين بلا حدود</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">✓</span>
+                                <span>إدارة المهام والأعمال وتوزيعها مع التنبيهات</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">✓</span>
+                                <span>إدارة الفواتير وأتعاب المحاماة وسندات القبض</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">✓</span>
+                                <span>تسجيل المصروفات القضائية والمكتبية والتقارير المالية</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">✓</span>
+                                <span>إدارة المستندات والأوراق والتوكيلات إلكترونياً</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">✓</span>
+                                <span>بوابة الموكلين التفاعلية لمتابعة قضاياهم</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">✓</span>
+                                <span>نطاق فرعي مخصص لمكتبك (office.jalsateg.com)</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs shrink-0 font-bold">✓</span>
+                                <span>نسخ احتياطي يومي وحماية كاملة للبيانات</span>
+                            </div>
                         </div>
 
-                        <!-- Enterprise Plan -->
-                        <div class="p-8 rounded-3xl bg-[#090d17] border border-slate-800 flex flex-col justify-between">
-                            <div>
-                                <h3 class="text-xl font-bold text-white mb-2">المؤسسات</h3>
-                                <p class="text-xs text-slate-400 mb-6">للكيانات والمكاتب الكبرى</p>
-                                <div class="mb-6 p-4 rounded-2xl bg-[#04070e] border border-slate-800 text-right">
-                                    <span class="text-4xl font-black text-white">{{ isAnnualPricing ? '4,160' : '416' }}</span>
-                                    <span class="text-xs text-slate-400 mr-1">ج.م / {{ isAnnualPricing ? 'سنوياً' : 'شهرياً' }}</span>
-                                </div>
-                                <ul class="space-y-3 mb-8 text-xs font-semibold text-slate-300">
-                                    <li class="flex items-center gap-2.5 text-blue-400 font-bold">✓ 50 مستخدم</li>
-                                    <li class="flex items-center gap-2.5">✓ 1,000 موكل</li>
-                                    <li class="flex items-center gap-2.5">✓ 20,000 قضية</li>
-                                    <li class="flex items-center gap-2.5">✓ إدارة المهام والفوترة والمستندات</li>
-                                    <li class="flex items-center gap-2.5 text-blue-400 font-bold">✓ بوابة الموكلين</li>
-                                </ul>
+                        <div class="pt-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+                            <div class="text-xs text-slate-400 font-medium">
+                                * التفعيل فوري وبدون انتظار، وبدون إدخال أي بطاقة بنكية.
                             </div>
-                            <Link href="/register" class="w-full text-center px-6 py-3.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs transition">
-                                اشترك الآن
+                            <Link href="/register" class="w-full sm:w-auto px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl text-sm transition shadow-lg shadow-emerald-500/30 text-center">
+                                سجل مكتبك الآن مجاناً بالكامل 🚀
                             </Link>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dedicated App Download Section (AAB & APK) -->
+            <section id="app-download" class="relative py-20 border-t border-slate-800/80 bg-gradient-to-b from-[#080d19] to-[#04070e] z-10">
+                <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="rounded-3xl bg-gradient-to-br from-[#0c1e38] via-[#09172c] to-[#050d1a] border-2 border-emerald-500/30 p-8 sm:p-12 shadow-2xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-10">
+                        
+                        <div class="absolute -top-24 -right-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                        <div class="text-right max-w-xl">
+                            <span class="px-3.5 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-black inline-flex items-center gap-2 mb-4">
+                                <span>📱</span>
+                                <span>تطبيق أندرويد متكامل</span>
+                            </span>
+                            <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight leading-snug mb-3">
+                                تطبيق منصة جلسات على هاتفك الذكي
+                            </h2>
+                            <p class="text-sm sm:text-base text-slate-300 leading-relaxed mb-6">
+                                تابع جدول جلساتك اليومية، تفاصيل القضايا، ومستندات الموكلين مباشرة من هاتفك في أي وقت ومن أي مكان مع إمكانية رفع وتصوير المستندات والتحميل المباشر.
+                            </p>
+
+                            <div class="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-300">
+                                <span class="flex items-center gap-1.5"><span class="text-emerald-400 font-bold">✓</span> يدعم النطاقات الفرعية لمكتبك</span>
+                                <span class="flex items-center gap-1.5"><span class="text-emerald-400 font-bold">✓</span> رفع وتصوير الملفات</span>
+                                <span class="flex items-center gap-1.5"><span class="text-emerald-400 font-bold">✓</span> تحميل مستندات PDF</span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons Container -->
+                        <div class="flex flex-col sm:flex-row lg:flex-col gap-4 w-full lg:w-auto shrink-0">
+                            <!-- AAB Download Button -->
+                            <a
+                                href="/downloads/jalsat-release.aab"
+                                download="jalsat-release.aab"
+                                class="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-2xl shadow-xl shadow-emerald-950/50 transition-all duration-200 hover:-translate-y-0.5 text-center flex items-center justify-center gap-3 text-sm"
+                            >
+                                <svg class="w-6 h-6 text-slate-950 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-1.0001 0-.5516.4482-1.0002.9993-1.0002.5516 0 .9997.4486.9997 1.0002 0 .5515-.4481 1.0001-.9997 1.0001m-11.046 0c-.5511 0-.9993-.4486-.9993-1.0001 0-.5516.4482-1.0002.9993-1.0002.5516 0 .9997.4486.9997 1.0002 0 .5515-.4481 1.0001-.9997 1.0001m11.4045-6.02l1.9965-3.456a.416.416 0 00-.1522-.5676.416.416 0 00-.5676.1522l-2.0223 3.503C15.5898 8.4116 13.844 8.082 12 8.082c-1.8445 0-3.5903.3296-5.1362.871L4.8415 5.45a.416.416 0 00-.5676-.1522.416.416 0 00-.1522.5676l1.9965 3.456C2.6874 11.0428.3435 14.8587.0544 19.3333h23.8912c-.2891-4.4746-2.633-8.2905-6.0645-10.0119"/>
+                                </svg>
+                                <div class="text-right">
+                                    <div class="text-[11px] text-slate-800 font-bold leading-tight">جاهز لـ Google Play</div>
+                                    <div class="text-base font-black">تحميل حزمة التطبيق (AAB)</div>
+                                </div>
+                            </a>
+
+                            <!-- APK Direct Install Button -->
+                            <a
+                                href="/downloads/jalsat-release.apk"
+                                download="jalsat-release.apk"
+                                class="px-8 py-4 bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700 text-white font-black rounded-2xl shadow-lg transition-all duration-200 hover:-translate-y-0.5 text-center flex items-center justify-center gap-3 text-sm"
+                            >
+                                <svg class="w-6 h-6 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                <div class="text-right">
+                                    <div class="text-[11px] text-slate-400 font-bold leading-tight">تثبيت مباشر على الهاتف</div>
+                                    <div class="text-base font-black">تحميل ملف APK</div>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>

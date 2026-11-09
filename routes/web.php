@@ -88,6 +88,22 @@ Route::get('/pricing', function () {
     return Inertia::render('Central/Pricing');
 })->name('central.pricing');
 
+Route::get('/downloads/{filename}', function (string $filename) {
+    $clean = basename($filename);
+    $path = public_path('downloads/' . $clean);
+    if (! file_exists($path)) {
+        if ($clean === 'jalsat.aab') {
+            $path = public_path('downloads/jalsat-release.aab');
+        } elseif ($clean === 'jalsat.apk') {
+            $path = public_path('downloads/jalsat-release.apk');
+        }
+    }
+    if (file_exists($path)) {
+        return response()->download($path);
+    }
+    abort(404);
+})->name('central.download');
+
 Route::get('/register', [RegisterController::class, 'showRegistrationForm'])->name('central.register');
 Route::post('/register', [RegisterController::class, 'register'])->name('central.register.submit');
 

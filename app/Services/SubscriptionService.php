@@ -5,12 +5,11 @@ namespace App\Services;
 use App\Models\Subscription;
 use App\Models\SubscriptionPlan;
 use App\Models\Tenant;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 
 class SubscriptionService
 {
-    public const TRIAL_DAYS = 15;
+    public const TRIAL_DAYS = 36500; // Lifetime access
 
     public function ensureTrialSubscription(Tenant $tenant): Subscription
     {
@@ -20,28 +19,45 @@ class SubscriptionService
         }
 
         $plan = SubscriptionPlan::where('slug', 'free')->first()
-            ?? SubscriptionPlan::orderBy('sort_order')->first();
+            ?? SubscriptionPlan::first();
 
         if (! $plan) {
-            throw new \RuntimeException('لا توجد خطط اشتراك. شغّل SubscriptionPlanSeeder أولاً.');
+            $plan = SubscriptionPlan::create([
+                'name' => 'المجانية الشاملة',
+                'slug' => 'free',
+                'tagline' => 'مجاني بالكامل لكافة مكاتب المحاماة',
+                'max_users' => 999999,
+                'max_clients' => 999999,
+                'max_cases' => 999999,
+                'max_storage_mb' => 999999,
+                'feature_tasks' => true,
+                'feature_billing' => true,
+                'feature_documents' => true,
+                'feature_portal' => true,
+                'price_monthly' => 0,
+                'price_yearly' => 0,
+                'is_active' => true,
+                'sort_order' => 1,
+            ]);
         }
 
         $subscription = Subscription::create([
             'id' => (string) Str::uuid(),
             'tenant_id' => $tenant->id,
             'plan_id' => $plan->id,
-            'status' => 'trialing',
-            'billing_period' => 'yearly',
+            'status' => 'active',
+            'billing_period' => 'lifetime',
             'starts_at' => now(),
-            'ends_at' => now()->addDays(self::TRIAL_DAYS),
-            'trial_ends_at' => now()->addDays(self::TRIAL_DAYS),
+            'ends_at' => null,
+            'trial_ends_at' => null,
         ]);
 
         $settings = $tenant->settings ?? [];
-        $settings['expires_at'] = $subscription->ends_at->toDateTimeString();
+        unset($settings['expires_at'], $settings['trial_days']);
+        $settings['is_free'] = true;
         $settings['plan_slug'] = $plan->slug;
-        $settings['billing_period'] = 'yearly';
-        $tenant->update(['settings' => $settings]);
+        $settings['billing_period'] = 'lifetime';
+        $tenant->update(['status' => 'active', 'settings' => $settings]);
 
         return $subscription;
     }
@@ -49,44 +65,34 @@ class SubscriptionService
     public function assignPlan(
         Tenant $tenant,
         SubscriptionPlan $plan,
-        string $billingPeriod = 'yearly',
+        string $billingPeriod = 'lifetime',
         ?int $days = null
     ): Subscription {
         $tenant->subscriptions()
             ->whereIn('status', ['active', 'trialing', 'past_due'])
             ->update(['status' => 'cancelled']);
 
-        $isFree = $plan->isFree();
-        $duration = $days ?? ($billingPeriod === 'monthly' ? 30 : 365);
-        if ($isFree && $days === null) {
-            $duration = self::TRIAL_DAYS;
-        }
-
-        $startsAt = now();
-        $endsAt = $startsAt->copy()->addDays($duration);
-
         $subscription = Subscription::create([
             'id' => (string) Str::uuid(),
             'tenant_id' => $tenant->id,
             'plan_id' => $plan->id,
-            'status' => $isFree ? 'trialing' : 'active',
+            'status' => 'active',
             'billing_period' => $billingPeriod,
-            'starts_at' => $startsAt,
-            'ends_at' => $endsAt,
-            'trial_ends_at' => $isFree ? $endsAt : null,
+            'starts_at' => now(),
+            'ends_at' => null,
+            'trial_ends_at' => null,
         ]);
 
         $settings = $tenant->settings ?? [];
-        $settings['expires_at'] = $endsAt->toDateTimeString();
+        unset($settings['expires_at']);
         $settings['plan_slug'] = $plan->slug;
         $settings['billing_period'] = $billingPeriod;
+        $settings['is_free'] = true;
 
         $tenant->update([
             'status' => 'active',
             'settings' => $settings,
         ]);
-
-        $this->createInvoiceForSubscription($tenant, $subscription, $plan, $billingPeriod);
 
         return $subscription->load('plan');
     }
@@ -95,21 +101,10 @@ class SubscriptionService
         Tenant $tenant,
         Subscription $subscription,
         SubscriptionPlan $plan,
-        string $billingPeriod = 'yearly',
+        string $billingPeriod = 'lifetime',
         string $status = 'paid',
-        ?string $paymentMethod = null
+        ?string $paymentMethod = 'free'
     ): \App\Models\SubscriptionInvoice {
-        $amount = $billingPeriod === 'monthly' ? (float) $plan->price_monthly : (float) $plan->price_yearly;
-        $taxAmount = 0.00;
-        $totalAmount = $amount + $taxAmount;
-
-        if ($plan->isFree() || $amount == 0) {
-            $paymentMethod = $paymentMethod ?? 'free';
-            $status = 'paid';
-        } else {
-            $paymentMethod = $paymentMethod ?? 'bank_transfer';
-        }
-
         $count = \App\Models\SubscriptionInvoice::count() + 1;
         $invoiceNumber = 'SINV-' . date('Y') . '-' . str_pad($count, 5, '0', STR_PAD_LEFT);
 
@@ -120,60 +115,36 @@ class SubscriptionService
             'plan_id' => $plan->id,
             'plan_name' => $plan->name,
             'billing_period' => $billingPeriod,
-            'amount' => $amount,
-            'tax_amount' => $taxAmount,
-            'total_amount' => $totalAmount,
-            'status' => $status,
+            'amount' => 0.00,
+            'tax_amount' => 0.00,
+            'total_amount' => 0.00,
+            'status' => 'paid',
             'issued_at' => now()->toDateString(),
-            'due_date' => now()->addDays(7)->toDateString(),
-            'paid_at' => $status === 'paid' ? now() : null,
-            'payment_method' => $paymentMethod,
-            'notes' => "فاتورة اشتراك تلقائية لخطة «{$plan->name}» ({$billingPeriod})",
+            'due_date' => now()->toDateString(),
+            'paid_at' => now(),
+            'payment_method' => 'free',
+            'notes' => "اشتراك مجاني بالكامل مدى الحياة لخطة «{$plan->name}»",
         ]);
     }
 
     public function summarize(?Subscription $subscription, Tenant $tenant): array
     {
-        $settings = $tenant->settings ?? [];
-
-        if ($subscription?->plan) {
-            $plan = $subscription->plan;
-            $endsAt = $subscription->ends_at
-                ?? ($subscription->trial_ends_at
-                    ?? (! empty($settings['expires_at']) ? Carbon::parse($settings['expires_at']) : null));
-
-            return [
-                'plan_id' => $plan->id,
-                'plan_name' => $plan->name,
-                'plan_slug' => $plan->slug,
-                'plan_tagline' => $plan->tagline,
-                'price_monthly' => (float) $plan->price_monthly,
-                'price_yearly' => (float) $plan->price_yearly,
-                'billing_period' => $subscription->billing_period ?? 'yearly',
-                'subscription_status' => $subscription->displayStatus(),
-                'starts_at' => $subscription->starts_at?->format('Y-m-d'),
-                'ends_at' => $endsAt?->format('Y-m-d'),
-                'is_trial' => $subscription->isTrialing(),
-            ];
-        }
-
-        // Fallback for tenants without a subscription row yet
-        $endsAt = ! empty($settings['expires_at'])
-            ? Carbon::parse($settings['expires_at'])
-            : ($tenant->created_at?->copy()->addDays(self::TRIAL_DAYS) ?? now()->addDays(self::TRIAL_DAYS));
+        $plan = $subscription?->plan
+            ?? SubscriptionPlan::where('slug', 'free')->first()
+            ?? SubscriptionPlan::first();
 
         return [
-            'plan_id' => null,
-            'plan_name' => 'تجريبي',
-            'plan_slug' => 'trial',
-            'plan_tagline' => 'فترة تجريبية',
+            'plan_id' => $plan?->id,
+            'plan_name' => 'مجاني بالكامل (مدى الحياة)',
+            'plan_slug' => 'free',
+            'plan_tagline' => 'كافة مميزات المنصة مجانية بالكامل لجميع مكاتب المحاماة',
             'price_monthly' => 0,
             'price_yearly' => 0,
-            'billing_period' => 'yearly',
-            'subscription_status' => 'trialing',
-            'starts_at' => $tenant->created_at?->format('Y-m-d'),
-            'ends_at' => $endsAt->format('Y-m-d'),
-            'is_trial' => true,
+            'billing_period' => 'مدى الحياة',
+            'subscription_status' => 'active',
+            'starts_at' => $tenant->created_at?->format('Y-m-d') ?? now()->format('Y-m-d'),
+            'ends_at' => null,
+            'is_trial' => false,
         ];
     }
 }

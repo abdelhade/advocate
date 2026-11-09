@@ -90,7 +90,7 @@ class RegisterController extends Controller
                 'settings' => [
                     'retention_days' => 365,
                     'currency' => 'EGP',
-                    'trial_days' => 15,
+                    'is_free' => true,
                 ],
             ]);
 
